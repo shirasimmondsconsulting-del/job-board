@@ -1,4 +1,9 @@
-require('dotenv').config({ path: './backend/.env' });
+const path = require('path');
+
+// Load .env file - works from both backend/ and project root directories
+const envPath = path.join(__dirname, '.env');
+require('dotenv').config({ path: envPath });
+
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
