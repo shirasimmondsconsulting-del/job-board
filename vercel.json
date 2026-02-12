@@ -1,8 +1,0 @@
-{
-  "projects": {
-    "frontend": {
-      "path": "react-app",
-      "target": "frontend"
-    }
-  }
-}

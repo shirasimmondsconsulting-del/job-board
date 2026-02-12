@@ -7,6 +7,17 @@ export default defineConfig({
     port: 3001,
     open: true
   },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom']
+        }
+      }
+    }
+  },
   resolve: {
     alias: {
       '@': '/src'
