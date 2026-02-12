@@ -1,17 +1,20 @@
 const nodemailer = require('nodemailer');
 
 // Create transporter with comprehensive timeout and connection settings
+// Optimized for SendGrid on Render/cloud platforms
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+  port: parseInt(process.env.SMTP_PORT) || 587,
+  // For SendGrid: use TLS (587) instead of SSL (465) for better cloud compatibility
+  secure: parseInt(process.env.SMTP_PORT) === 465,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
   },
-  // Connection timeout settings (in milliseconds)
-  connectionTimeout: 30000,  // Connection timeout: 30 seconds
-  socketTimeout: 30000,      // Socket timeout: 30 seconds
+  // Extended timeout settings for cloud environments (Render, etc.)
+  connectionTimeout: 60000,  // Connection timeout: 60 seconds (extended for Render)
+  socketTimeout: 60000,      // Socket timeout: 60 seconds
+  greetingTimeout: 10000,    // Greeting timeout: 10 seconds
   // Connection pooling for better performance
   pool: {
     maxConnections: 5,       // Maximum concurrent connections
@@ -19,28 +22,34 @@ const transporter = nodemailer.createTransport({
     rateDelta: 1000,         // Time window for rate limit
     rateLimit: 14            // Max 14 messages per second
   },
-  // TLS configuration
+  // TLS configuration for cloud providers
   tls: {
-    rejectUnauthorized: false  // Allow self-signed certificates (for cloud services)
-  },
-  // Retry configuration
-  maxAttempts: 3,
-  maxMessages: 100
+    rejectUnauthorized: false,  // Required for cloud environments
+    minVersion: 'TLSv1.2'       // Enforce minimum TLS version
+  }
 });
 
-// Verify connection with timeout
+// Verify connection with extended timeout (60 seconds for cloud)
 const verifyWithTimeout = () => {
   const timeout = setTimeout(() => {
-    console.error('📧 SMTP Verification Timeout: Unable to verify connection after 10 seconds');
-  }, 10000);
+    console.error('📧 SMTP Verification Timeout: Unable to connect after 60 seconds');
+    console.error('📧 Possible causes for Render/SendGrid:');
+    console.error('  1. Network latency on cloud platform');
+    console.error('  2. API key is invalid or expired');
+    console.error('  3. SendGrid account not properly configured');
+    console.error('  4. Port 587/465 blocked by provider firewall');
+  }, 60000);
 
   transporter.verify((error, success) => {
     clearTimeout(timeout);
     if (error) {
       console.error('📧 SMTP Connection Error:', error.message);
-      console.error('📧 Please check your SMTP credentials and network connectivity');
+      console.error('📧 Configuration: ' + process.env.SMTP_HOST + ':' + process.env.SMTP_PORT);
+      console.error('📧 User: ' + process.env.SMTP_USER);
+      console.error('📧 Please verify your SendGrid account and API key');
     } else {
       console.log('📧 SMTP Server is ready to take our messages');
+      console.log('📧 Host: ' + process.env.SMTP_HOST + ' Port: ' + process.env.SMTP_PORT);
     }
   });
 };
