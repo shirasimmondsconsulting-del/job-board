@@ -1,83 +1,118 @@
 const nodemailer = require('nodemailer');
+const axios = require("axios");
 
 // Detect if running on Render (check for Render environment)
-const isRender = process.env.RENDER === 'true' || process.env.RENDER_EXTERNAL_URL;
+const isRender =
+  process.env.RENDER === "true" || process.env.RENDER_EXTERNAL_URL;
 
 // Simple logger for nodemailer (only on Render for debugging)
 const createLogger = () => {
   if (!isRender) return false; // No logging on local
   return {
-    trace: (msg) => console.log('📧 [TRACE]', msg),
-    debug: (msg) => console.log('📧 [DEBUG]', msg),
-    info: (msg) => console.log('📧 [INFO]', msg),
-    warn: (msg) => console.warn('📧 [WARN]', msg),
-    error: (msg) => console.error('📧 [ERROR]', msg),
+    trace: (msg) => console.log("📧 [TRACE]", msg),
+    debug: (msg) => console.log("📧 [DEBUG]", msg),
+    info: (msg) => console.log("📧 [INFO]", msg),
+    warn: (msg) => console.warn("📧 [WARN]", msg),
+    error: (msg) => console.error("📧 [ERROR]", msg),
   };
 };
 
-// Create transporter with comprehensive timeout and connection settings
-// Optimized for SendGrid on Render/cloud platforms
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: isRender ? 465 : (parseInt(process.env.SMTP_PORT) || 587),
-  // For Render: always use SSL (465) - TLS (587) is often blocked
-  // For local/other: use TLS (587) which is more reliable
-  secure: isRender ? true : (parseInt(process.env.SMTP_PORT) === 465),
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  },
-  // Extended timeout settings for cloud environments (Render, etc.)
-  connectionTimeout: 90000,  // Connection timeout: 90 seconds (extended for Render SSL negotiation)
-  socketTimeout: 90000,      // Socket timeout: 90 seconds
-  greetingTimeout: 30000,    // Greeting timeout: 30 seconds (increased for SSL handshake)
-  // Connection pooling for better performance
-  pool: {
-    maxConnections: 2,       // Reduced for Render stability
-    maxMessages: 50,         // Reduced for Render stability
-    rateDelta: 2000,         // Slower rate for Render
-    rateLimit: 5             // Max 5 messages per 2 seconds on Render
-  },
-  // TLS configuration for cloud providers
-  tls: {
-    rejectUnauthorized: false,  // Required for cloud environments
-    minVersion: 'TLSv1.2'       // Enforce minimum TLS version
-  },
-  // Debug mode for Render troubleshooting - must be a logger object
-  logger: createLogger()
-});
-
-// Verify connection with extended timeout (90+ seconds for Render SSL)
-const verifyWithTimeout = () => {
-  const timeout = setTimeout(() => {
-    console.error('📧 SMTP Verification Timeout: Unable to connect after 90 seconds');
-    console.error('📧 Environment: ' + (isRender ? 'RENDER' : 'Local/Other'));
-    console.error('📧 Using Port: ' + (isRender ? '465 (SSL)' : '587 (TLS)'));
-    console.error('📧 Possible Render-specific causes:');
-    console.error('  1. Network latency during SSL handshake');
-    console.error('  2. SendGrid account needs verification');
-    console.error('  3. API key was recently regenerated');
-    console.error('  4. Render firewall blocking outbound SMTP');
-  }, 90000);
-
-  transporter.verify((error, success) => {
-    clearTimeout(timeout);
-    if (error) {
-      console.error('📧 SMTP Connection Error:', error.message);
-      console.error('📧 Configuration: ' + process.env.SMTP_HOST + ':' + (isRender ? '465' : process.env.SMTP_PORT));
-      console.error('📧 User: ' + process.env.SMTP_USER);
-      console.error('📧 Environment: ' + (isRender ? 'RENDER (using SSL 465)' : 'Local (using TLS 587)'));
-      console.error('📧 Please verify your SendGrid account and API key');
-    } else {
-      console.log('📧 SMTP Server is ready to take our messages');
-      console.log('📧 Host: ' + process.env.SMTP_HOST + ' Port: ' + (isRender ? '465 (SSL)' : process.env.SMTP_PORT) + ' (TLS)');
-      console.log('📧 Environment: ' + (isRender ? '✅ RENDER' : '✅ Local/Other'));
-    }
+// SMTP Transporter (for local development)
+let smtpTransporter = null;
+if (!isRender) {
+  smtpTransporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT) || 587,
+    secure: parseInt(process.env.SMTP_PORT) === 465,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    connectionTimeout: 90000,
+    socketTimeout: 90000,
+    greetingTimeout: 30000,
+    pool: {
+      maxConnections: 2,
+      maxMessages: 50,
+      rateDelta: 2000,
+      rateLimit: 5,
+    },
+    tls: {
+      rejectUnauthorized: false,
+      minVersion: "TLSv1.2",
+    },
+    logger: createLogger(),
   });
-};
+}
 
-// Verify connection on startup
-verifyWithTimeout();
+// Verify SMTP connection on startup (local only)
+if (smtpTransporter) {
+  const verifyWithTimeout = () => {
+    const timeout = setTimeout(() => {
+      console.error(
+        "📧 SMTP Verification Timeout: Unable to connect after 90 seconds",
+      );
+    }, 90000);
+
+    smtpTransporter.verify((error, success) => {
+      clearTimeout(timeout);
+      if (error) {
+        console.error("📧 SMTP Connection Error:", error.message);
+      } else {
+        console.log("📧 SMTP Server is ready to take our messages");
+      }
+    });
+  };
+  verifyWithTimeout();
+}
+
+// SendGrid API function (for Render production)
+const sendViaAPI = async (to, subject, html) => {
+  const apiKey = process.env.SMTP_PASS; // SendGrid API key
+  if (!apiKey || !apiKey.startsWith("SG.")) {
+    throw new Error("Invalid SendGrid API key");
+  }
+
+  try {
+    const response = await axios.post(
+      "https://api.sendgrid.com/v3/mail/send",
+      {
+        personalizations: [
+          {
+            to: [{ email: to }],
+            subject: subject,
+          },
+        ],
+        from: {
+          email: process.env.SMTP_FROM_EMAIL,
+          name: process.env.SMTP_FROM_NAME,
+        },
+        content: [
+          {
+            type: "text/html",
+            value: html,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 30000,
+      },
+    );
+
+    console.log("📧 Message sent via SendGrid API");
+    return response.data;
+  } catch (error) {
+    console.error(
+      "📧 SendGrid API Error:",
+      error.response?.data || error.message,
+    );
+    throw new Error("Failed to send email via SendGrid API");
+  }
+};
 
 class EmailService {
   /**
@@ -90,13 +125,14 @@ class EmailService {
         return await fn();
       } catch (error) {
         lastError = error;
-        console.warn(`📧 Email send attempt ${attempt} failed: ${error.message}`);
-        
+        console.warn(
+          `📧 Email send attempt ${attempt} failed: ${error.message}`,
+        );
+
         if (attempt < maxRetries) {
-          // Calculate exponential backoff: 1s, 2s, 4s
           const delay = Math.pow(2, attempt - 1) * 1000;
           console.log(`📧 Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
@@ -104,34 +140,40 @@ class EmailService {
   }
 
   /**
-   * Universal email sender with retry logic
+   * Universal email sender - uses API on Render, SMTP locally
    */
   static async sendEmail(to, subject, html) {
     try {
-      const mailOptions = {
-        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
-        to,
-        subject,
-        html
-      };
-
-      // Send with retry logic
-      const info = await this.retryWithBackoff(async () => {
-        return await transporter.sendMail(mailOptions);
-      });
-
-      console.log('📧 Message sent: %s', info.messageId);
-      return info;
+      // Use SendGrid API on Render, SMTP locally
+      if (isRender) {
+        console.log("📧 Using SendGrid API (Render environment)");
+        return await this.retryWithBackoff(() => sendViaAPI(to, subject, html));
+      } else {
+        console.log("📧 Using SMTP (Local environment)");
+        const mailOptions = {
+          from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+          to,
+          subject,
+          html,
+        };
+        return await this.retryWithBackoff(() =>
+          smtpTransporter.sendMail(mailOptions),
+        );
+      }
     } catch (error) {
-      console.error('📧 Email Sending Error (after retries):', error.message);
-      console.error('📧 To:', to);
-      console.error('📧 Subject:', subject);
-      throw new Error('Failed to send email: ' + error.message);
+      console.error("📧 Email Sending Error (after retries):", error.message);
+      console.error("📧 To:", to);
+      console.error("📧 Subject:", subject);
+      throw new Error("Failed to send email: " + error.message);
     }
   }
 
   // Send account verification email
-  static async sendVerificationEmail(recipientEmail, verificationUrl, firstName = 'User') {
+  static async sendVerificationEmail(
+    recipientEmail,
+    verificationUrl,
+    firstName = "User",
+  ) {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
         <h2 style="color: #2563eb;">Welcome to Habayta Jobs!</h2>
@@ -145,7 +187,11 @@ class EmailService {
       </div>
     `;
 
-    return this.sendEmail(recipientEmail, 'Verify your email - Habayta Jobs', html);
+    return this.sendEmail(
+      recipientEmail,
+      "Verify your email - Habayta Jobs",
+      html,
+    );
   }
 
   // Send password reset email
@@ -162,7 +208,11 @@ class EmailService {
       </div>
     `;
 
-    return this.sendEmail(recipientEmail, 'Reset your password - Habayta Jobs', html);
+    return this.sendEmail(
+      recipientEmail,
+      "Reset your password - Habayta Jobs",
+      html,
+    );
   }
 
   // Send OTP email
@@ -178,11 +228,19 @@ class EmailService {
       </div>
     `;
 
-    return this.sendEmail(recipientEmail, 'Your Verification Code - Habayta Jobs', html);
+    return this.sendEmail(
+      recipientEmail,
+      "Your Verification Code - Habayta Jobs",
+      html,
+    );
   }
 
   // Send application confirmation
-  static async sendApplicationConfirmation(recipientEmail, jobTitle, companyName) {
+  static async sendApplicationConfirmation(
+    recipientEmail,
+    jobTitle,
+    companyName,
+  ) {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
         <h2 style="color: #10b981;">Application Submitted!</h2>
@@ -191,26 +249,46 @@ class EmailService {
       </div>
     `;
 
-    return this.sendEmail(recipientEmail, 'Application submitted successfully - Habayta Jobs', html);
+    return this.sendEmail(
+      recipientEmail,
+      "Application submitted successfully - Habayta Jobs",
+      html,
+    );
   }
 
   // Send application status update
-  static async sendApplicationStatusUpdate(recipientEmail, jobTitle, status, message = '') {
-    const color = status === 'accepted' ? '#10b981' : (status === 'rejected' ? '#ef4444' : '#2563eb');
+  static async sendApplicationStatusUpdate(
+    recipientEmail,
+    jobTitle,
+    status,
+    message = "",
+  ) {
+    const color =
+      status === "accepted"
+        ? "#10b981"
+        : status === "rejected"
+        ? "#ef4444"
+        : "#2563eb";
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
         <h2 style="color: ${color};">Application Update</h2>
         <p>Your application for <strong>${jobTitle}</strong> has been updated to: <strong>${status.toUpperCase()}</strong></p>
-        ${message ? `<p><strong>Employer Message:</strong> ${message}</p>` : ''}
+        ${message ? `<p><strong>Employer Message:</strong> ${message}</p>` : ""}
         <p>Good luck!</p>
       </div>
     `;
 
-    return this.sendEmail(recipientEmail, `Application ${status.charAt(0).toUpperCase() + status.slice(1)} - Habayta Jobs`, html);
+    return this.sendEmail(
+      recipientEmail,
+      `Application ${
+        status.charAt(0).toUpperCase() + status.slice(1)
+      } - Habayta Jobs`,
+      html,
+    );
   }
 
   // Send welcome email after verification
-  static async sendWelcomeEmail(recipientEmail, firstName = 'User') {
+  static async sendWelcomeEmail(recipientEmail, firstName = "User") {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
         <h2 style="color: #10b981;">Welcome to Habayta Jobs, ${firstName}! 🎉</h2>
@@ -228,11 +306,16 @@ class EmailService {
       </div>
     `;
 
-    return this.sendEmail(recipientEmail, 'Welcome to Habayta Jobs! 🎉', html);
+    return this.sendEmail(recipientEmail, "Welcome to Habayta Jobs! 🎉", html);
   }
 
   // Send job matching notification
-  static async sendJobMatchingEmail(recipientEmail, jobTitle, jobUrl, companyName) {
+  static async sendJobMatchingEmail(
+    recipientEmail,
+    jobTitle,
+    jobUrl,
+    companyName,
+  ) {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
         <h2 style="color: #2563eb;">New Job Match!</h2>
@@ -241,7 +324,11 @@ class EmailService {
       </div>
     `;
 
-    return this.sendEmail(recipientEmail, 'New job matching your profile - Habayta Jobs', html);
+    return this.sendEmail(
+      recipientEmail,
+      "New job matching your profile - Habayta Jobs",
+      html,
+    );
   }
 }
 

@@ -5,23 +5,26 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
+    // Normalize origin by removing trailing slash for comparison
+    const normalizedOrigin = origin.replace(/\/$/, "");
+
     const allowedOrigins = [
       process.env.CLIENT_URL,
-      'http://localhost:5173', // Vite dev server
-      'http://localhost:3000', // React dev server
-      'http://localhost:3001', // React dev server (alt port)
-      'http://localhost:3002', // React dev server (alt port)
-      'http://10.8.24.87:3001', // Local IP for mobile testing
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001',
-      'http://127.0.0.1:3002'
-    ];
+      "http://localhost:5173", // Vite dev server
+      "http://localhost:3000", // React dev server
+      "http://localhost:3001", // React dev server (alt port)
+      "http://localhost:3002", // React dev server (alt port)
+      "http://10.8.24.87:3001", // Local IP for mobile testing
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:3001",
+      "http://127.0.0.1:3002",
+    ].map((url) => url.replace(/\/$/, "")); // Remove trailing slashes from all allowed origins
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.indexOf(normalizedOrigin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
