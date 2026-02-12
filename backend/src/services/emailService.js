@@ -1,55 +1,66 @@
 const nodemailer = require('nodemailer');
 
+// Detect if running on Render (check for Render environment)
+const isRender = process.env.RENDER === 'true' || process.env.RENDER_EXTERNAL_URL;
+
 // Create transporter with comprehensive timeout and connection settings
 // Optimized for SendGrid on Render/cloud platforms
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT) || 587,
-  // For SendGrid: use TLS (587) instead of SSL (465) for better cloud compatibility
-  secure: parseInt(process.env.SMTP_PORT) === 465,
+  port: isRender ? 465 : (parseInt(process.env.SMTP_PORT) || 587),
+  // For Render: always use SSL (465) - TLS (587) is often blocked
+  // For local/other: use TLS (587) which is more reliable
+  secure: isRender ? true : (parseInt(process.env.SMTP_PORT) === 465),
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
   },
   // Extended timeout settings for cloud environments (Render, etc.)
-  connectionTimeout: 60000,  // Connection timeout: 60 seconds (extended for Render)
-  socketTimeout: 60000,      // Socket timeout: 60 seconds
-  greetingTimeout: 10000,    // Greeting timeout: 10 seconds
+  connectionTimeout: 90000,  // Connection timeout: 90 seconds (extended for Render SSL negotiation)
+  socketTimeout: 90000,      // Socket timeout: 90 seconds
+  greetingTimeout: 30000,    // Greeting timeout: 30 seconds (increased for SSL handshake)
   // Connection pooling for better performance
   pool: {
-    maxConnections: 5,       // Maximum concurrent connections
-    maxMessages: 100,        // Messages per connection before closing
-    rateDelta: 1000,         // Time window for rate limit
-    rateLimit: 14            // Max 14 messages per second
+    maxConnections: 2,       // Reduced for Render stability
+    maxMessages: 50,         // Reduced for Render stability
+    rateDelta: 2000,         // Slower rate for Render
+    rateLimit: 5             // Max 5 messages per 2 seconds on Render
   },
   // TLS configuration for cloud providers
   tls: {
     rejectUnauthorized: false,  // Required for cloud environments
     minVersion: 'TLSv1.2'       // Enforce minimum TLS version
-  }
+  },
+  // Debug mode for Render troubleshooting
+  logger: isRender,
+  debug: isRender
 });
 
-// Verify connection with extended timeout (60 seconds for cloud)
+// Verify connection with extended timeout (90+ seconds for Render SSL)
 const verifyWithTimeout = () => {
   const timeout = setTimeout(() => {
-    console.error('📧 SMTP Verification Timeout: Unable to connect after 60 seconds');
-    console.error('📧 Possible causes for Render/SendGrid:');
-    console.error('  1. Network latency on cloud platform');
-    console.error('  2. API key is invalid or expired');
-    console.error('  3. SendGrid account not properly configured');
-    console.error('  4. Port 587/465 blocked by provider firewall');
-  }, 60000);
+    console.error('📧 SMTP Verification Timeout: Unable to connect after 90 seconds');
+    console.error('📧 Environment: ' + (isRender ? 'RENDER' : 'Local/Other'));
+    console.error('📧 Using Port: ' + (isRender ? '465 (SSL)' : '587 (TLS)'));
+    console.error('📧 Possible Render-specific causes:');
+    console.error('  1. Network latency during SSL handshake');
+    console.error('  2. SendGrid account needs verification');
+    console.error('  3. API key was recently regenerated');
+    console.error('  4. Render firewall blocking outbound SMTP');
+  }, 90000);
 
   transporter.verify((error, success) => {
     clearTimeout(timeout);
     if (error) {
       console.error('📧 SMTP Connection Error:', error.message);
-      console.error('📧 Configuration: ' + process.env.SMTP_HOST + ':' + process.env.SMTP_PORT);
+      console.error('📧 Configuration: ' + process.env.SMTP_HOST + ':' + (isRender ? '465' : process.env.SMTP_PORT));
       console.error('📧 User: ' + process.env.SMTP_USER);
+      console.error('📧 Environment: ' + (isRender ? 'RENDER (using SSL 465)' : 'Local (using TLS 587)'));
       console.error('📧 Please verify your SendGrid account and API key');
     } else {
       console.log('📧 SMTP Server is ready to take our messages');
-      console.log('📧 Host: ' + process.env.SMTP_HOST + ' Port: ' + process.env.SMTP_PORT);
+      console.log('📧 Host: ' + process.env.SMTP_HOST + ' Port: ' + (isRender ? '465 (SSL)' : process.env.SMTP_PORT) + ' (TLS)');
+      console.log('📧 Environment: ' + (isRender ? '✅ RENDER' : '✅ Local/Other'));
     }
   });
 };
