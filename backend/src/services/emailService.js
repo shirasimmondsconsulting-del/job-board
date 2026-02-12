@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 
-// Create transporter
+// Create transporter with comprehensive timeout and connection settings
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
@@ -8,21 +8,72 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
-  }
+  },
+  // Connection timeout settings (in milliseconds)
+  connectionTimeout: 30000,  // Connection timeout: 30 seconds
+  socketTimeout: 30000,      // Socket timeout: 30 seconds
+  // Connection pooling for better performance
+  pool: {
+    maxConnections: 5,       // Maximum concurrent connections
+    maxMessages: 100,        // Messages per connection before closing
+    rateDelta: 1000,         // Time window for rate limit
+    rateLimit: 14            // Max 14 messages per second
+  },
+  // TLS configuration
+  tls: {
+    rejectUnauthorized: false  // Allow self-signed certificates (for cloud services)
+  },
+  // Retry configuration
+  maxAttempts: 3,
+  maxMessages: 100
 });
 
-// Verify connection
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('📧 SMTP Connection Error:', error);
-  } else {
-    console.log('📧 SMTP Server is ready to take our messages');
-  }
-});
+// Verify connection with timeout
+const verifyWithTimeout = () => {
+  const timeout = setTimeout(() => {
+    console.error('📧 SMTP Verification Timeout: Unable to verify connection after 10 seconds');
+  }, 10000);
+
+  transporter.verify((error, success) => {
+    clearTimeout(timeout);
+    if (error) {
+      console.error('📧 SMTP Connection Error:', error.message);
+      console.error('📧 Please check your SMTP credentials and network connectivity');
+    } else {
+      console.log('📧 SMTP Server is ready to take our messages');
+    }
+  });
+};
+
+// Verify connection on startup
+verifyWithTimeout();
 
 class EmailService {
   /**
-   * Universal email sender
+   * Retry logic with exponential backoff
+   */
+  static async retryWithBackoff(fn, maxRetries = 3) {
+    let lastError;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        console.warn(`📧 Email send attempt ${attempt} failed: ${error.message}`);
+        
+        if (attempt < maxRetries) {
+          // Calculate exponential backoff: 1s, 2s, 4s
+          const delay = Math.pow(2, attempt - 1) * 1000;
+          console.log(`📧 Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  /**
+   * Universal email sender with retry logic
    */
   static async sendEmail(to, subject, html) {
     try {
@@ -33,12 +84,18 @@ class EmailService {
         html
       };
 
-      const info = await transporter.sendMail(mailOptions);
+      // Send with retry logic
+      const info = await this.retryWithBackoff(async () => {
+        return await transporter.sendMail(mailOptions);
+      });
+
       console.log('📧 Message sent: %s', info.messageId);
       return info;
     } catch (error) {
-      console.error('📧 Email Sending Error:', error);
-      throw new Error('Failed to send email');
+      console.error('📧 Email Sending Error (after retries):', error.message);
+      console.error('📧 To:', to);
+      console.error('📧 Subject:', subject);
+      throw new Error('Failed to send email: ' + error.message);
     }
   }
 
