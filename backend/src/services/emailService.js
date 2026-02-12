@@ -3,6 +3,18 @@ const nodemailer = require('nodemailer');
 // Detect if running on Render (check for Render environment)
 const isRender = process.env.RENDER === 'true' || process.env.RENDER_EXTERNAL_URL;
 
+// Simple logger for nodemailer (only on Render for debugging)
+const createLogger = () => {
+  if (!isRender) return false; // No logging on local
+  return {
+    trace: (msg) => console.log('📧 [TRACE]', msg),
+    debug: (msg) => console.log('📧 [DEBUG]', msg),
+    info: (msg) => console.log('📧 [INFO]', msg),
+    warn: (msg) => console.warn('📧 [WARN]', msg),
+    error: (msg) => console.error('📧 [ERROR]', msg),
+  };
+};
+
 // Create transporter with comprehensive timeout and connection settings
 // Optimized for SendGrid on Render/cloud platforms
 const transporter = nodemailer.createTransport({
@@ -31,9 +43,8 @@ const transporter = nodemailer.createTransport({
     rejectUnauthorized: false,  // Required for cloud environments
     minVersion: 'TLSv1.2'       // Enforce minimum TLS version
   },
-  // Debug mode for Render troubleshooting
-  logger: isRender,
-  debug: isRender
+  // Debug mode for Render troubleshooting - must be a logger object
+  logger: createLogger()
 });
 
 // Verify connection with extended timeout (90+ seconds for Render SSL)
