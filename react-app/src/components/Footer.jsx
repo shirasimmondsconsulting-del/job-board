@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Heart, MapPin, Mail, Linkedin, Twitter, ExternalLink, Github } from 'lucide-react'
+import logoImage from '../assets/logo.png'
 
 function Footer() {
   const currentYear = new Date().getFullYear()
@@ -13,7 +14,7 @@ function Footer() {
           <div className="lg:col-span-2">
             <Link to="/" className="inline-flex items-center gap-3 mb-5 group">
               <div className="w-11 h-11 rounded-xl overflow-hidden shadow-lg shadow-blue-900/30 group-hover:scale-105 transition-transform">
-                <img src="/logo.png" alt="Habayta Jobs" className="w-full h-full object-cover" />
+                <img src={logoImage} alt="Habayta Jobs" className="w-full h-full object-cover" />
               </div>
               <span className="text-xl font-bold text-white">Habayta Jobs</span>
             </Link>

@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Menu, X, Briefcase, Bookmark, Users, Building2, Home, Sparkles, LogOut, User, FileText, Podcast } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import logoImage from '../assets/logo.png'
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -69,7 +70,7 @@ function Navbar() {
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative">
               <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                <img src="/logo.png" alt="Habayta Jobs" className="w-full h-full object-cover" />
+                <img src={logoImage} alt="Habayta Jobs" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white shadow-sm"></div>
             </div>

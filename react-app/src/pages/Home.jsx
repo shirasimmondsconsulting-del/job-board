@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Briefcase, Users, Building2, TrendingUp, MapPin, Clock, CheckCircle2, Star, Zap, Globe, Shield } from 'lucide-react'
 import { useJobs } from '../context/JobsContext'
+import heroImage from '../assets/hero.png'
 
 function Home() {
   const { jobs = [] } = useJobs()
@@ -121,7 +122,7 @@ function Home() {
                 {/* Main Hero Image */}
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/20 group">
                   <img
-                    src="/hero.png"
+                    src={heroImage}
                     alt="Man with Israeli flag"
                     className="w-full h-[300px] lg:h-[400px] object-cover transition-transform duration-700 group-hover:scale-110"
                   />
