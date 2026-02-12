@@ -14,13 +14,18 @@ function Footer() {
           <div className="lg:col-span-2">
             <Link to="/" className="inline-flex items-center gap-3 mb-5 group">
               <div className="w-11 h-11 rounded-xl overflow-hidden shadow-lg shadow-blue-900/30 group-hover:scale-105 transition-transform">
-                <img src={logoImage} alt="Habayta Jobs" className="w-full h-full object-cover" />
+                <img
+                  src={logoImage}
+                  alt="Habayta Jobs"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="text-xl font-bold text-white">Habayta Jobs</span>
             </Link>
             <p className="text-gray-400 max-w-md mb-6 leading-relaxed text-sm">
-              Built by Olim, for Olim. Connecting talented professionals with Israeli companies
-              that understand and value the unique journey of making Aliyah.
+              Built by Olim, for Olim. Connecting talented professionals with
+              Israeli companies that understand and value the unique journey of
+              making Aliyah.
             </p>
             <div className="flex gap-3">
               <a
@@ -56,28 +61,42 @@ function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-5 text-sm uppercase tracking-wider">For Job Seekers</h3>
+            <h3 className="text-white font-semibold mb-5 text-sm uppercase tracking-wider">
+              For Job Seekers
+            </h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/jobs" className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group">
+                <Link
+                  to="/jobs"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                >
                   Browse Jobs
                   <ExternalLink className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                 </Link>
               </li>
               <li>
-                <Link to="/job-seekers" className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group">
+                <Link
+                  to="/job-seekers"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                >
                   Create Profile
                   <ExternalLink className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                 </Link>
               </li>
               <li>
-                <Link to="/saved-jobs" className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group">
+                <Link
+                  to="/saved-jobs"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                >
                   Saved Jobs
                   <ExternalLink className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-gray-400 hover:text-blue-400 transition-colors">
+                <a
+                  href="#"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                >
                   Career Resources
                 </a>
               </li>
@@ -86,27 +105,40 @@ function Footer() {
 
           {/* For Employers & Contact */}
           <div>
-            <h3 className="text-white font-semibold mb-5 text-sm uppercase tracking-wider">For Employers</h3>
+            <h3 className="text-white font-semibold mb-5 text-sm uppercase tracking-wider">
+              For Employers
+            </h3>
             <ul className="space-y-3 mb-8">
               <li>
-                <Link to="/companies" className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group">
+                <Link
+                  to="/companies"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                >
                   Post a Job — Free
                   <ExternalLink className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-gray-400 hover:text-blue-400 transition-colors">
+                <a
+                  href="#"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                >
                   Browse Candidates
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-gray-400 hover:text-blue-400 transition-colors">
+                <a
+                  href="#"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                >
                   Pricing Plans
                 </a>
               </li>
             </ul>
 
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contact</h3>
+            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+              Contact
+            </h3>
             <ul className="space-y-2">
               <li className="flex items-center gap-2 text-sm text-gray-400">
                 <MapPin className="w-4 h-4 text-blue-500" />
@@ -114,7 +146,10 @@ function Footer() {
               </li>
               <li className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 text-blue-500" />
-                <a href="mailto:hello@habaytajobs.com" className="text-gray-400 hover:text-blue-400 transition-colors">
+                <a
+                  href="mailto:hello@habaytajobs.com"
+                  className="text-gray-400 hover:text-blue-400 transition-colors"
+                >
                   hello@habaytajobs.com
                 </a>
               </li>
@@ -130,14 +165,25 @@ function Footer() {
             <p className="text-xs text-gray-500">
               © {currentYear} Habayta Jobs. All rights reserved.
             </p>
+            <p>
+              Powered by{" "}
+              <a
+                href="https://smartreachai.com/"
+                className="text-blue-400 hover:underline"
+              >
+                SmartReachAI.com
+              </a>
+            </p>
             <p className="text-xs text-gray-500 flex items-center gap-1.5">
-              Made with <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" /> for those making Aliyah
+              Made with{" "}
+              <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" />{" "}
+              for those making Aliyah
             </p>
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }
 
 export default Footer
