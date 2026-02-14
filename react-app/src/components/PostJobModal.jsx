@@ -37,20 +37,18 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
     description: '',
     shortDescription: '',
     city: '',
-    country: '',
     isRemote: false,
     jobType: 'Full-time',
     experienceLevel: 'Mid Level',
     category: 'IT',
     salaryMin: '',
     salaryMax: '',
-    currency: 'USD',
+    currency: 'ILS',
     requiredSkills: '',
     optionalSkills: '',
     qualifications: '',
     responsibilities: '',
     benefits: '',
-    applicationDeadline: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -63,20 +61,19 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
         description: editJob.description || '',
         shortDescription: editJob.shortDescription || '',
         city: editJob.location?.city || '',
-        country: editJob.location?.country || '',
         isRemote: editJob.location?.isRemote || false,
         jobType: editJob.jobType || 'Full-time',
         experienceLevel: editJob.experienceLevel || 'Mid Level',
         category: editJob.category || 'IT',
         salaryMin: editJob.salary?.minSalary || '',
         salaryMax: editJob.salary?.maxSalary || '',
-        currency: editJob.salary?.currency || 'USD',
+        currency: editJob.salary?.currency || 'ILS',
         requiredSkills: editJob.requiredSkills?.join('\n') || '',
         optionalSkills: editJob.optionalSkills?.join('\n') || '',
         qualifications: editJob.qualifications || '',
         responsibilities: editJob.responsibilities || '',
         benefits: editJob.benefits?.join('\n') || '',
-        applicationDeadline: editJob.applicationDeadline ? editJob.applicationDeadline.split('T')[0] : ''
+
       });
     } else {
       // Reset form for new job
@@ -85,20 +82,18 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
         description: '',
         shortDescription: '',
         city: '',
-        country: '',
         isRemote: false,
         jobType: 'Full-time',
         experienceLevel: 'Mid Level',
         category: 'IT',
         salaryMin: '',
         salaryMax: '',
-        currency: 'USD',
+        currency: 'ILS',
         requiredSkills: '',
         optionalSkills: '',
         qualifications: '',
         responsibilities: '',
-        benefits: '',
-        applicationDeadline: ''
+        benefits: ''
       });
     }
   }, [editJob, isOpen]);
@@ -124,7 +119,6 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
         shortDescription: formData.shortDescription || formData.description.substring(0, 200),
         location: {
           city: formData.city,
-          country: formData.country,
           isRemote: formData.isRemote
         },
         jobType: formData.jobType,
@@ -141,7 +135,7 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
         qualifications: formData.qualifications,
         responsibilities: formData.responsibilities,
         benefits: formData.benefits.split('\n').filter(b => b.trim()),
-        applicationDeadline: formData.applicationDeadline ? new Date(formData.applicationDeadline).toISOString() : undefined
+
       };
 
       if (editJob) {
@@ -156,20 +150,18 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
         description: '',
         shortDescription: '',
         city: '',
-        country: '',
         isRemote: false,
         jobType: 'Full-time',
         experienceLevel: 'Mid Level',
         category: 'IT',
         salaryMin: '',
         salaryMax: '',
-        currency: 'USD',
+        currency: 'ILS',
         requiredSkills: '',
         optionalSkills: '',
         qualifications: '',
         responsibilities: '',
-        benefits: '',
-        applicationDeadline: ''
+        benefits: ''
       });
 
       if (onJobPosted) onJobPosted();
@@ -292,19 +284,7 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Country
-                  </label>
-                  <input
-                    type="text"
-                    name="country"
-                    value={formData.country}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g. Israel"
-                  />
-                </div>
+
 
                 <div className="flex items-center">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -374,19 +354,7 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  Application Deadline
-                </label>
-                <input
-                  type="date"
-                  name="applicationDeadline"
-                  value={formData.applicationDeadline}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+
             </div>
 
             {/* Salary */}
@@ -407,9 +375,6 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
                     <option value="ILS">ILS</option>
                   </select>
                 </div>

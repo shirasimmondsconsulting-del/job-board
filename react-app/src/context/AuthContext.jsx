@@ -151,6 +151,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Refresh current user from server and update context
+  const refreshUser = async () => {
+    try {
+      const response = await authApi.getCurrentUser();
+      setUser(response.data.data.user);
+      return response.data.data.user;
+    } catch (err) {
+      console.error('Failed to refresh user', err);
+      return null;
+    }
+  };
+
   const resendVerification = async (email) => {
     try {
       setError(null);
@@ -181,6 +193,7 @@ export const AuthProvider = ({ children }) => {
         resetPassword,
         verifyEmail,
         resendVerification,
+        refreshUser,
         setError
       }}
     >

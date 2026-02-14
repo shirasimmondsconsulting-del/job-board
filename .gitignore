@@ -119,3 +119,5 @@ QUICK_REFERENCE.md
 SMTP_FIX_GUIDE.md
 SENDGRID_SETUP.md
 PRODUCTION_FIXES.md
+backend/.env.production
+backend/.env.production

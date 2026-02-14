@@ -11,12 +11,14 @@ class UserController {
   static async getProfile(req, res, next) {
     try {
       const user = await User.findById(req.user._id)
-        .select('-password -emailVerificationToken -emailVerificationExpires -passwordResetToken -passwordResetExpires')
-        .populate('companyId', 'name slug logo');
+        .select(
+          "-password -emailVerificationToken -emailVerificationExpires -passwordResetToken -passwordResetExpires",
+        )
+        .populate("companyId", "name slug logo");
 
       res.status(200).json({
         success: true,
-        data: { user }
+        data: { user },
       });
     } catch (error) {
       next(error);
@@ -25,30 +27,33 @@ class UserController {
 
   // @desc    Get public user profile by ID
   // @route   GET /api/v1/users/:id
-  // @access  Public (with conditional access to contact info for employers)
+  // @access  Employer-only
   static async getPublicProfile(req, res, next) {
     try {
+      // Enforce employer-only access as defense-in-depth
+      if (!req.user || req.user.userType !== "employer") {
+        return next(
+          new AppError("Not authorized to view candidate profiles", 403),
+        );
+      }
+
       const userId = req.params.id;
 
-      // Basic public fields
-      let fields = 'firstName lastName profileImage bio skills experience education location userType createdAt linkedinUrl portfolioUrl';
-
-      // If the requesting user is an employer, include contact info
-      if (req.user && req.user.userType === 'employer') {
-        fields += ' email phone resume';
-      }
+      // Basic public fields + contact for employers
+      const fields =
+        "firstName lastName profileImage bio skills experience education location userType createdAt linkedinUrl portfolioUrl email phone resume availability preferredJobTypes preferredLocations";
 
       const user = await User.findById(userId)
         .select(fields)
-        .populate('companyId', 'name slug logo');
+        .populate("companyId", "name slug logo");
 
       if (!user) {
-        return next(new AppError('User not found', 404));
+        return next(new AppError("User not found", 404));
       }
 
       res.status(200).json({
         success: true,
-        data: { user }
+        data: { user },
       });
     } catch (error) {
       next(error);
@@ -61,28 +66,36 @@ class UserController {
   static async updateProfile(req, res, next) {
     try {
       const allowedFields = [
-        'firstName', 'lastName', 'bio', 'phone', 'location',
-        'skills', 'experience', 'education', 'preferredJobTypes',
-        'preferredLocations', 'availability'
+        "firstName",
+        "lastName",
+        "bio",
+        "phone",
+        "location",
+        "skills",
+        "experience",
+        "education",
+        "preferredJobTypes",
+        "preferredLocations",
+        "availability",
+        "linkedinUrl",
       ];
 
       const updateData = {};
-      allowedFields.forEach(field => {
+      allowedFields.forEach((field) => {
         if (req.body[field] !== undefined) {
           updateData[field] = req.body[field];
         }
       });
 
-      const user = await User.findByIdAndUpdate(
-        req.user._id,
-        updateData,
-        { new: true, runValidators: true }
-      ).populate('companyId', 'name slug logo');
+      const user = await User.findByIdAndUpdate(req.user._id, updateData, {
+        new: true,
+        runValidators: true,
+      }).populate("companyId", "name slug logo");
 
       res.status(200).json({
         success: true,
-        message: 'Profile updated successfully',
-        data: { user }
+        message: "Profile updated successfully",
+        data: { user },
       });
     } catch (error) {
       next(error);
@@ -95,7 +108,7 @@ class UserController {
   static async uploadProfileImage(req, res, next) {
     try {
       if (!req.file) {
-        return next(new AppError('Please upload an image', 400));
+        return next(new AppError("Please upload an image", 400));
       }
 
       // Delete old profile image if exists
@@ -105,7 +118,10 @@ class UserController {
       }
 
       // Upload new image
-      const uploadResult = await UploadService.uploadProfileImage(req.file, req.user._id);
+      const uploadResult = await UploadService.uploadProfileImage(
+        req.file,
+        req.user._id,
+      );
 
       // Update user
       user.profileImage = uploadResult;
@@ -113,10 +129,10 @@ class UserController {
 
       res.status(200).json({
         success: true,
-        message: 'Profile image uploaded successfully',
+        message: "Profile image uploaded successfully",
         data: {
-          profileImage: uploadResult
-        }
+          profileImage: uploadResult,
+        },
       });
     } catch (error) {
       next(error);
@@ -129,11 +145,11 @@ class UserController {
   static async uploadResume(req, res, next) {
     try {
       if (!req.file) {
-        return next(new AppError('Please upload a resume', 400));
+        return next(new AppError("Please upload a resume", 400));
       }
 
-      if (req.user.userType !== 'job_seeker') {
-        return next(new AppError('Only job seekers can upload resumes', 403));
+      if (req.user.userType !== "job_seeker") {
+        return next(new AppError("Only job seekers can upload resumes", 403));
       }
 
       // Delete old resume if exists
@@ -143,21 +159,24 @@ class UserController {
       }
 
       // Upload new resume
-      const uploadResult = await UploadService.uploadResume(req.file, req.user._id);
+      const uploadResult = await UploadService.uploadResume(
+        req.file,
+        req.user._id,
+      );
 
       // Update user
       user.resume = {
         ...uploadResult,
-        uploadedAt: new Date()
+        uploadedAt: new Date(),
       };
       await user.save();
 
       res.status(200).json({
         success: true,
-        message: 'Resume uploaded successfully',
+        message: "Resume uploaded successfully",
         data: {
-          resume: user.resume
-        }
+          resume: user.resume,
+        },
       });
     } catch (error) {
       next(error);
@@ -172,7 +191,7 @@ class UserController {
       const user = await User.findById(req.user._id);
 
       if (!user.resume || !user.resume.url) {
-        return next(new AppError('Resume not found', 404));
+        return next(new AppError("Resume not found", 404));
       }
 
       res.redirect(user.resume.url);
@@ -188,11 +207,15 @@ class UserController {
     try {
       const { currentPassword, newPassword } = req.body;
 
-      await AuthService.changePassword(req.user._id, currentPassword, newPassword);
+      await AuthService.changePassword(
+        req.user._id,
+        currentPassword,
+        newPassword,
+      );
 
       res.status(200).json({
         success: true,
-        message: 'Password changed successfully'
+        message: "Password changed successfully",
       });
     } catch (error) {
       next(new AppError(error.message, 400));
@@ -204,7 +227,8 @@ class UserController {
   // @access  Private
   static async updateSettings(req, res, next) {
     try {
-      const { emailNotifications, smsNotifications, marketingEmails } = req.body;
+      const { emailNotifications, smsNotifications, marketingEmails } =
+        req.body;
 
       const user = await User.findByIdAndUpdate(
         req.user._id,
@@ -212,18 +236,18 @@ class UserController {
           preferences: {
             emailNotifications: emailNotifications ?? true,
             smsNotifications: smsNotifications ?? false,
-            marketingEmails: marketingEmails ?? true
-          }
+            marketingEmails: marketingEmails ?? true,
+          },
         },
-        { new: true }
+        { new: true },
       );
 
       res.status(200).json({
         success: true,
-        message: 'Settings updated successfully',
+        message: "Settings updated successfully",
         data: {
-          preferences: user.preferences
-        }
+          preferences: user.preferences,
+        },
       });
     } catch (error) {
       next(error);
@@ -238,7 +262,7 @@ class UserController {
       const user = await User.findById(req.user._id);
 
       if (!user) {
-        return next(new AppError('User not found', 404));
+        return next(new AppError("User not found", 404));
       }
 
       // Soft delete - mark as deleted
@@ -253,13 +277,12 @@ class UserController {
 
       res.status(200).json({
         success: true,
-        message: 'Account deleted successfully'
+        message: "Account deleted successfully",
       });
     } catch (error) {
       next(error);
     }
   }
-
 
   // @desc    Get user's posted jobs
   // @route   GET /api/v1/users/:id/jobs
@@ -270,18 +293,21 @@ class UserController {
       const { page = 1, limit = 10 } = req.query;
 
       const user = await User.findById(id);
-      if (!user || user.userType !== 'employer') {
-        return next(new AppError('User not found or not an employer', 404));
+      if (!user || user.userType !== "employer") {
+        return next(new AppError("User not found or not an employer", 404));
       }
 
-      const Job = require('../models/Job');
-      const jobs = await Job.find({ postedBy: id, status: 'published' })
-        .populate('companyId', 'name logo slug')
+      const Job = require("../models/Job");
+      const jobs = await Job.find({ postedBy: id, status: "published" })
+        .populate("companyId", "name logo slug")
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(parseInt(limit));
 
-      const total = await Job.countDocuments({ postedBy: id, status: 'published' });
+      const total = await Job.countDocuments({
+        postedBy: id,
+        status: "published",
+      });
 
       res.status(200).json({
         success: true,
@@ -290,8 +316,8 @@ class UserController {
           page: parseInt(page),
           limit: parseInt(limit),
           total,
-          pages: Math.ceil(total / limit)
-        }
+          pages: Math.ceil(total / limit),
+        },
       });
     } catch (error) {
       next(error);
@@ -307,18 +333,20 @@ class UserController {
 
       // Only allow users to view their own applications
       if (id !== req.user._id.toString()) {
-        return next(new AppError('Not authorized to view these applications', 403));
+        return next(
+          new AppError("Not authorized to view these applications", 403),
+        );
       }
 
-      const Application = require('../models/Application');
+      const Application = require("../models/Application");
       const applications = await Application.find({ userId: id })
-        .populate('jobId', 'title companyId salary location')
-        .populate('companyId', 'name logo')
+        .populate("jobId", "title companyId salary location")
+        .populate("companyId", "name logo")
         .sort({ appliedAt: -1 });
 
       res.status(200).json({
         success: true,
-        data: applications
+        data: applications,
       });
     } catch (error) {
       next(error);
@@ -333,24 +361,29 @@ class UserController {
       const user = await User.findById(req.user._id);
 
       // Get recent applications
-      const Application = require('../models/Application');
-      const recentApplications = await Application.find({ userId: req.user._id })
-        .populate('jobId', 'title companyId')
-        .populate('companyId', 'name')
+      const Application = require("../models/Application");
+      const recentApplications = await Application.find({
+        userId: req.user._id,
+      })
+        .populate("jobId", "title companyId")
+        .populate("companyId", "name")
         .sort({ appliedAt: -1 })
         .limit(5);
 
       // Get saved jobs count
-      const SavedJob = require('../models/SavedJob');
-      const savedJobsCount = await SavedJob.countDocuments({ userId: req.user._id });
+      const SavedJob = require("../models/SavedJob");
+      const savedJobsCount = await SavedJob.countDocuments({
+        userId: req.user._id,
+      });
 
       // Get recommended jobs (simple implementation)
-      const Job = require('../models/Job');
+      const Job = require("../models/Job");
       const recommendedJobs = await Job.find({
-        status: 'published',
-        'location.isRemote': user.preferences?.preferredLocations?.includes('Remote') || false
+        status: "published",
+        "location.isRemote":
+          user.preferences?.preferredLocations?.includes("Remote") || false,
       })
-        .populate('companyId', 'name logo')
+        .populate("companyId", "name logo")
         .sort({ createdAt: -1 })
         .limit(5);
 
@@ -362,15 +395,15 @@ class UserController {
             firstName: user.firstName,
             lastName: user.lastName,
             profileImage: user.profileImage,
-            userType: user.userType
+            userType: user.userType,
           },
           stats: {
             applicationsCount: recentApplications.length,
-            savedJobsCount
+            savedJobsCount,
           },
           recentApplications,
-          recommendedJobs
-        }
+          recommendedJobs,
+        },
       });
     } catch (error) {
       next(error);
@@ -382,21 +415,21 @@ class UserController {
   // @access  Private
   static async getSavedJobs(req, res, next) {
     try {
-      const SavedJob = require('../models/SavedJob');
+      const SavedJob = require("../models/SavedJob");
       const savedJobs = await SavedJob.find({ userId: req.user._id })
         .populate({
-          path: 'jobId',
-          select: 'title salary location jobType companyId status',
+          path: "jobId",
+          select: "title salary location jobType companyId status",
           populate: {
-            path: 'companyId',
-            select: 'name logo'
-          }
+            path: "companyId",
+            select: "name logo",
+          },
         })
         .sort({ savedAt: -1 });
 
       res.status(200).json({
         success: true,
-        data: savedJobs.filter(savedJob => savedJob.jobId) // Filter out deleted jobs
+        data: savedJobs.filter((savedJob) => savedJob.jobId), // Filter out deleted jobs
       });
     } catch (error) {
       next(error);
@@ -409,10 +442,10 @@ class UserController {
   static async getJobRecommendations(req, res, next) {
     try {
       const user = await User.findById(req.user._id);
-      const Job = require('../models/Job');
+      const Job = require("../models/Job");
 
       // Simple recommendation logic based on user preferences
-      let query = { status: 'published' };
+      let query = { status: "published" };
 
       if (user.skills && user.skills.length > 0) {
         query.requiredSkills = { $in: user.skills };
@@ -420,20 +453,20 @@ class UserController {
 
       if (user.location) {
         query.$or = [
-          { 'location.city': new RegExp(user.location.city, 'i') },
-          { 'location.state': new RegExp(user.location.state, 'i') },
-          { 'location.isRemote': true }
+          { "location.city": new RegExp(user.location.city, "i") },
+          { "location.state": new RegExp(user.location.state, "i") },
+          { "location.isRemote": true },
         ];
       }
 
       const recommendations = await Job.find(query)
-        .populate('companyId', 'name logo industry')
+        .populate("companyId", "name logo industry")
         .sort({ createdAt: -1 })
         .limit(10);
 
       res.status(200).json({
         success: true,
-        data: recommendations
+        data: recommendations,
       });
     } catch (error) {
       next(error);
@@ -445,7 +478,12 @@ class UserController {
   // @access  Private
   static async updatePreferences(req, res, next) {
     try {
-      const { preferredJobTypes, preferredLocations, salaryRange, availability } = req.body;
+      const {
+        preferredJobTypes,
+        preferredLocations,
+        salaryRange,
+        availability,
+      } = req.body;
 
       const user = await User.findByIdAndUpdate(
         req.user._id,
@@ -454,16 +492,16 @@ class UserController {
             preferredJobTypes,
             preferredLocations,
             salaryRange,
-            availability
-          }
+            availability,
+          },
         },
-        { new: true, runValidators: true }
+        { new: true, runValidators: true },
       );
 
       res.status(200).json({
         success: true,
-        message: 'Preferences updated successfully',
-        data: { preferences: user.preferences }
+        message: "Preferences updated successfully",
+        data: { preferences: user.preferences },
       });
     } catch (error) {
       next(error);
@@ -472,26 +510,27 @@ class UserController {
 
   // @desc    Get all job seekers
   // @route   GET /api/v1/users/job-seekers
-  // @access  Public
+  // @access  Employer-only
   static async getJobSeekers(req, res, next) {
     try {
+      // Enforce employer-only access
+      if (!req.user || req.user.userType !== "employer") {
+        return next(new AppError("Not authorized to view candidates", 403));
+      }
+
       const { search } = req.query;
-      const query = { userType: 'job_seeker' };
+      const query = { userType: "job_seeker" };
 
       if (search) {
         query.$or = [
-          { firstName: new RegExp(search, 'i') },
-          { lastName: new RegExp(search, 'i') },
-          { skills: { $in: [new RegExp(search, 'i')] } }
+          { firstName: new RegExp(search, "i") },
+          { lastName: new RegExp(search, "i") },
+          { skills: { $in: [new RegExp(search, "i")] } },
         ];
       }
 
-      let selectFields = 'firstName lastName profileImage bio skills experience education location createdAt availability';
-
-      // Include email for employers so mailto link works
-      if (req.user && req.user.userType === 'employer') {
-        selectFields += ' email';
-      }
+      const selectFields =
+        "firstName lastName profileImage bio skills experience education location createdAt availability email phone linkedinUrl resume preferredJobTypes";
 
       const users = await User.find(query)
         .select(selectFields)
@@ -499,7 +538,7 @@ class UserController {
 
       res.status(200).json({
         success: true,
-        data: users
+        data: users,
       });
     } catch (error) {
       next(error);

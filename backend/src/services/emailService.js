@@ -178,7 +178,7 @@ class EmailService {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
         <h2 style="color: #2563eb;">Welcome to Habayta Jobs!</h2>
         <p>Hi ${firstName},</p>
-        <p>Thank you for registering. Please verify your email address to active your account:</p>
+        <p>Thank you for registering. Please verify your email address to activate your account:</p>
         <a href="${verificationUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">Verify Email Address</a>
         <p>If the button doesn't work, copy and paste this link into your browser:</p>
         <p style="word-break: break-all; color: #666;">${verificationUrl}</p>

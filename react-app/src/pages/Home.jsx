@@ -1,18 +1,15 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Briefcase, Users, Building2, TrendingUp, MapPin, Clock, CheckCircle2, Star, Zap, Globe, Shield } from 'lucide-react'
+import { ArrowRight, Briefcase, Users, Building2, MapPin, Clock, CheckCircle2, Star, Zap, Globe, Shield } from 'lucide-react'
 import { useJobs } from '../context/JobsContext'
+import { useAuth } from '../context/AuthContext'
 import heroImage from '../assets/hero.png'
 
 function Home() {
   const { jobs = [] } = useJobs()
+  const navigate = useNavigate()
+  const { isAuthenticated, user } = useAuth()
 
-  const stats = [
-    { number: '1,247+', label: 'Olim Hired', icon: CheckCircle2 },
-    { number: `${jobs.length}+`, label: 'Active Jobs', icon: Briefcase },
-    { number: '150+', label: 'Companies', icon: Building2 },
-    { number: '95%', label: 'Success Rate', icon: TrendingUp },
-  ]
 
   const features = [
     {
@@ -87,28 +84,7 @@ function Home() {
                 </Link>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {stats.map((stat, index) => {
-                  const Icon = stat.icon
-                  return (
-                    <motion.div
-                      key={stat.label}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-                      className="relative group"
-                    >
-                      <div className="bg-white border border-gray-100 rounded-2xl p-4 text-center shadow-sm hover:shadow-md hover:border-blue-100 transition-all duration-300">
-                        <div className="text-2xl lg:text-3xl font-bold text-gray-900 mb-0.5">
-                          {stat.number}
-                        </div>
-                        <div className="text-xs text-gray-500 font-medium">{stat.label}</div>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
+
             </motion.div>
 
             {/* Right Content - Hero Visual */}
@@ -168,20 +144,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Trusted By / Social Proof */}
-      <section className="py-12 border-y border-gray-100 bg-gray-50/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm font-medium text-gray-400 uppercase tracking-wider mb-6">
-            Trusted by leading Israeli companies
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-8 lg:gap-16 opacity-60">
-            {['Wix', 'monday.com', 'Fiverr', 'Check Point', 'Mobileye', 'JFrog'].map((company) => (
-              <span key={company} className="text-xl font-bold text-gray-400">{company}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Features Section */}
       <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -235,15 +197,24 @@ function Home() {
               Get matched with opportunities that fit your skills and timeline.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/job-seekers" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-700 rounded-lg hover:bg-gray-50 shadow-lg font-semibold">
-                <Users className="w-5 h-5" />
-                Create Profile
-              </Link>
-              <Link to="/jobs" className="inline-flex items-center gap-2 px-8 py-3 bg-white/10 text-white border border-white/20 rounded-lg hover:bg-white/20 font-semibold backdrop-blur-sm">
-                Browse Jobs
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
+                <button
+                  onClick={() => {
+                    if (!isAuthenticated) return navigate('/register')
+                    if (user?.userType === 'job_seeker') return navigate('/create-profile')
+                    // Employers -> take them to employer area
+                    return navigate('/employer/dashboard')
+                  }}
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-700 rounded-lg hover:bg-gray-50 shadow-lg font-semibold"
+                >
+                  <Users className="w-5 h-5" />
+                  Create Profile
+                </button>
+
+                <Link to="/jobs" className="inline-flex items-center gap-2 px-8 py-3 bg-white/10 text-white border border-white/20 rounded-lg hover:bg-white/20 font-semibold backdrop-blur-sm">
+                  Browse Jobs
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
           </div>
         </div>
       </section>

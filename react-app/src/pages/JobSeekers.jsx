@@ -1,9 +1,30 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, MapPin, Briefcase, Mail, Linkedin, Clock, Filter, Users, ChevronDown, SlidersHorizontal, ArrowRight, Wifi, GraduationCap, Globe, LogIn, Loader } from 'lucide-react'
+import {
+  Search,
+  MapPin,
+  Briefcase,
+  Mail,
+  Linkedin,
+  Clock,
+  Filter,
+  Users,
+  ChevronDown,
+  SlidersHorizontal,
+  ArrowRight,
+  Wifi,
+  GraduationCap,
+  Globe,
+  LogIn,
+  Loader,
+  Phone,
+  FileText,
+  Eye,
+} from "lucide-react";
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { usersApi } from '../api'
+import ResumeViewerModal from "../components/ResumeViewerModal";
 
 function JobSeekers() {
   const { isAuthenticated } = useAuth()
@@ -11,6 +32,8 @@ function JobSeekers() {
   const [seekers, setSeekers] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [showResumeViewer, setShowResumeViewer] = useState(false);
+  const [selectedResume, setSelectedResume] = useState({ url: "", name: "" });
   const [filters, setFilters] = useState({
     timeline: '',
     industry: '',
@@ -228,7 +251,8 @@ function JobSeekers() {
                         {/* Header */}
                         <div className="flex items-start gap-4 mb-4">
                           <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-lg shadow-primary-500/20">
-                            {seeker.firstName?.[0]}{seeker.lastName?.[0]}
+                            {seeker.firstName?.[0]}
+                            {seeker.lastName?.[0]}
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary-700 transition-colors mb-1 truncate">
@@ -238,17 +262,24 @@ function JobSeekers() {
                               <Globe className="w-3.5 h-3.5 text-gray-400" />
                               {seeker.location}
                             </p>
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${timelineBadge.color}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${timelineBadge.dot}`}></span>
-                              {seeker.availability || 'Available'}
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${timelineBadge.color}`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${timelineBadge.dot}`}
+                              ></span>
+                              {seeker.availability || "Available"}
                             </span>
                           </div>
                         </div>
 
                         {/* Roles / Skills */}
                         <div className="flex flex-wrap gap-2 mb-4">
-                          {seeker.skills?.slice(0, 3).map(skill => (
-                            <span key={skill} className="inline-flex items-center px-2.5 py-1 bg-primary-50 text-primary-700 rounded-lg text-xs font-semibold border border-primary-100">
+                          {seeker.skills?.slice(0, 3).map((skill) => (
+                            <span
+                              key={skill}
+                              className="inline-flex items-center px-2.5 py-1 bg-primary-50 text-primary-700 rounded-lg text-xs font-semibold border border-primary-100"
+                            >
                               {skill}
                             </span>
                           ))}
@@ -261,11 +292,55 @@ function JobSeekers() {
                         </div>
 
                         {/* Details - Blurred if not authenticated */}
-                        <div className={`space-y-2 mb-5 text-sm ${!isAuthenticated ? 'filter blur-sm' : ''}`}>
-                          <p className="text-gray-700">
-                            <span className="font-semibold text-gray-900">Experience:</span> {seeker.experience?.yearsOfExperience} years
+                        <div
+                          className={`space-y-2 mb-5 text-sm ${!isAuthenticated ? "filter blur-sm" : ""}`}
+                        >
+                          {seeker.experience?.yearsOfExperience && (
+                            <p className="text-gray-700">
+                              <span className="font-semibold text-gray-900">
+                                Experience:
+                              </span>{" "}
+                              {seeker.experience.yearsOfExperience} years
+                            </p>
+                          )}
+                          <p className="text-gray-500 line-clamp-2">
+                            {seeker.bio}
                           </p>
-                          <p className="text-gray-500 line-clamp-2">{seeker.bio}</p>
+                          {isAuthenticated && seeker.phone && (
+                            <p className="text-gray-700 flex items-center gap-1.5">
+                              <Phone className="w-3.5 h-3.5 text-gray-400" />
+                              {seeker.phone}
+                            </p>
+                          )}
+                          {isAuthenticated &&
+                            seeker.preferredJobTypes?.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {seeker.preferredJobTypes.map((type, i) => (
+                                  <span
+                                    key={i}
+                                    className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs"
+                                  >
+                                    {type}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          {isAuthenticated && seeker.resume?.url && (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setSelectedResume({
+                                  url: seeker.resume.url,
+                                  name: `${seeker.firstName} ${seeker.lastName}`,
+                                });
+                                setShowResumeViewer(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-xs font-medium mt-1 cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              View Resume
+                            </button>
+                          )}
                         </div>
 
                         {/* Actions */}
@@ -279,7 +354,15 @@ function JobSeekers() {
                               <ArrowRight className="w-4 h-4" />
                             </Link>
                             <a
-                              href={seeker.email ? `mailto:${seeker.email}?subject=Job Opportunity` : '#'}
+                              href={
+                                seeker.email
+                                  ? `mailto:${seeker.email}?subject=${encodeURIComponent("Job Opportunity")}`
+                                  : "#"
+                              }
+                              onClick={() => {
+                                if (seeker.email && navigator.clipboard)
+                                  navigator.clipboard.writeText(seeker.email);
+                              }}
                               className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-sm font-semibold transition-colors border border-gray-200"
                             >
                               <Mail className="w-4 h-4" />
@@ -299,7 +382,7 @@ function JobSeekers() {
                         )}
                       </div>
                     </motion.div>
-                  )
+                  );
                 })}
               </div>
 
@@ -321,6 +404,14 @@ function JobSeekers() {
           )}
         </div>
       </section>
+
+      {/* Resume Viewer Modal */}
+      <ResumeViewerModal
+        isOpen={showResumeViewer}
+        onClose={() => setShowResumeViewer(false)}
+        resumeUrl={selectedResume.url}
+        candidateName={selectedResume.name}
+      />
     </div>
   )
 }

@@ -25,6 +25,10 @@ function EmployerJobs() {
 
     useEffect(() => {
         fetchJobs()
+
+        const handler = () => fetchJobs()
+        window.addEventListener('application:statusChanged', handler)
+        return () => window.removeEventListener('application:statusChanged', handler)
     }, [])
 
     const fetchJobs = async () => {
@@ -221,7 +225,7 @@ function EmployerJobs() {
                         <div className="space-y-4">
                             {filteredJobs.map((job, index) => {
                                 const location = typeof job.location === 'object'
-                                    ? `${job.location.city || ''}, ${job.location.country || ''}`.replace(/, $/, '').replace(/^, /, '')
+                                    ? `${job.location.city || ''}`.replace(/, $/, '').replace(/^, /, '')
                                     : job.location
 
                                 return (

@@ -2,6 +2,7 @@ const Application = require('../models/Application');
 const Job = require('../models/Job');
 const Company = require('../models/Company');
 const EmailService = require('../services/emailService');
+const JobService = require('../services/jobService');
 const Notification = require('../models/Notification');
 const { APPLICATION_STATUS, PAGINATION } = require('../config/constants');
 const { AppError } = require('../middleware/errorHandler');
@@ -62,7 +63,7 @@ class ApplicationController {
         return next(new AppError('Only job seekers can submit applications', 403));
       }
 
-      const { jobId, coverLetter, portfolioUrl, expectedSalary, availableFrom, linkedinUrl, resumeUrl } = req.body;
+      const { jobId, coverLetter, portfolioUrl, expectedSalary, linkedinUrl, resumeUrl } = req.body;
 
       // Validate job exists and is published
       const job = await Job.findById(jobId);
@@ -76,10 +77,6 @@ class ApplicationController {
         return next(new AppError('You have already applied for this job', 409));
       }
 
-      // Check if job is still accepting applications
-      if (job.applicationDeadline && new Date() > job.applicationDeadline) {
-        return next(new AppError('Application deadline has passed', 400));
-      }
 
       // Determine companyId (fallback to employer's company if not on job)
       let companyId = job.companyId;
@@ -99,7 +96,6 @@ class ApplicationController {
         coverLetter,
         portfolioUrl,
         expectedSalary,
-        availableFrom,
         linkedinUrl,
         resumeUrl
       });
@@ -343,6 +339,14 @@ class ApplicationController {
       }
 
       await application.updateStatus(APPLICATION_STATUS.ACCEPTED, req.user._id, 'Accepted by employer');
+
+      // Close the job automatically when an application is accepted
+      try {
+        await JobService.closeJob(application.jobId._id || application.jobId, req.user._id);
+      } catch (closeErr) {
+        // Log but don't fail the accept operation if closing the job fails
+        console.error('Failed to auto-close job after acceptance:', closeErr);
+      }
 
       res.status(200).json({
         success: true,

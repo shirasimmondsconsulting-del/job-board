@@ -56,8 +56,7 @@ const companySchema = new mongoose.Schema({
   // Location
   headquarters: {
     city: String,
-    state: String,
-    country: String
+    state: String
   },
   officeLocations: [String],
 

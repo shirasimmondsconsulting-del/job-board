@@ -71,6 +71,13 @@ function MyApplications() {
 
       // Refresh applications
       fetchJobsAndApplications()
+
+      // Notify other UI (dashboard/jobs) to refresh counts/state
+      try {
+        window.dispatchEvent(new CustomEvent('application:statusChanged', { detail: { applicationId, action } }))
+      } catch (e) {
+        // ignore
+      }
     } catch (error) {
       console.error('Failed to update status:', error)
       toast.error('Failed to update application status')
@@ -229,31 +236,11 @@ function MyApplications() {
                                   <span className="text-gray-600 ml-1">${app.expectedSalary.toLocaleString()}/year</span>
                                 </div>
                               )}
-                              {app.availableFrom && (
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="w-4 h-4 text-gray-500" />
-                                  <span className="font-semibold text-gray-700">Available:</span>
-                                  <span className="text-gray-600 ml-1">
-                                    {new Date(app.availableFrom).toLocaleDateString()}
-                                  </span>
-                                </div>
-                              )}
                             </div>
 
                             {/* Links */}
-                            {(app.portfolioUrl || app.linkedinUrl) && (
+                            {app.linkedinUrl && (
                               <div className="flex gap-3 mb-4">
-                                {app.portfolioUrl && (
-                                  <a
-                                    href={app.portfolioUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
-                                  >
-                                    <ExternalLink className="w-3.5 h-3.5" />
-                                    Portfolio
-                                  </a>
-                                )}
                                 {app.linkedinUrl && (
                                   <a
                                     href={app.linkedinUrl}
@@ -273,7 +260,11 @@ function MyApplications() {
                               {/* Message Button */}
                               {app.userId?.email && (
                                 <a
-                                  href={`mailto:${app.userId.email}?subject=Regarding your application for ${selectedJobData?.title || 'the position'}`}
+                                  href={`mailto:${app.userId.email}?subject=${encodeURIComponent(`Regarding your application for ${selectedJobData?.title || 'the position'}`)}`}
+                                  onClick={(e) => {
+                                    // allow default mailto behavior; also copy email to clipboard as a fallback
+                                    setTimeout(() => { if (navigator.clipboard) navigator.clipboard.writeText(app.userId.email) }, 500)
+                                  }}
                                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm font-semibold transition-colors"
                                 >
                                   <Mail className="w-4 h-4" />

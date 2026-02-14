@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
-import { Heart, MapPin, Mail, Linkedin, Twitter, ExternalLink, Github } from 'lucide-react'
+import { Heart, MapPin, Mail, ExternalLink } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 import logoImage from '../assets/logo.png'
 
 function Footer() {
   const currentYear = new Date().getFullYear()
+  const { isAuthenticated, user } = useAuth()
+  const createProfileTarget = !isAuthenticated ? '/register' : (user?.userType === 'job_seeker' ? '/create-profile' : '/employer/dashboard')
 
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -29,28 +32,7 @@ function Footer() {
             </p>
             <div className="flex gap-3">
               <a
-                href="#"
-                className="w-10 h-10 bg-gray-800/80 hover:bg-primary-600 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 bg-gray-800/80 hover:bg-primary-600 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 bg-gray-800/80 hover:bg-primary-600 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
-                aria-label="GitHub"
-              >
-                <Github className="w-4 h-4" />
-              </a>
-              <a
-                href="mailto:hello@habaytajobs.com"
+                href="mailto:support@habaytajobs.com"
                 className="w-10 h-10 bg-gray-800/80 hover:bg-primary-600 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
                 aria-label="Email"
               >
@@ -75,8 +57,9 @@ function Footer() {
                 </Link>
               </li>
               <li>
+                {/* Create Profile should route guests to register, job_seekers to create-profile, employers to dashboard */}
                 <Link
-                  to="/job-seekers"
+                  to={createProfileTarget}
                   className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
                 >
                   Create Profile
@@ -92,14 +75,7 @@ function Footer() {
                   <ExternalLink className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                 </Link>
               </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
-                >
-                  Career Resources
-                </a>
-              </li>
+
             </ul>
           </div>
 
@@ -119,21 +95,15 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                <Link
+                  to="/job-seekers"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
                 >
                   Browse Candidates
-                </a>
+                  <ExternalLink className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                </Link>
               </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
-                >
-                  Pricing Plans
-                </a>
-              </li>
+
             </ul>
 
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
@@ -147,10 +117,10 @@ function Footer() {
               <li className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 text-blue-500" />
                 <a
-                  href="mailto:hello@habaytajobs.com"
+                  href="mailto:support@habaytajobs.com"
                   className="text-gray-400 hover:text-blue-400 transition-colors"
                 >
-                  hello@habaytajobs.com
+                  support@habaytajobs.com
                 </a>
               </li>
             </ul>

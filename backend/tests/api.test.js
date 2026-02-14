@@ -31,6 +31,9 @@ describe('Health Check', () => {
 });
 
 describe('Auth Routes', () => {
+  const User = require('../src/models/User');
+  const AuthService = require('../src/services/authService');
+
   test('POST /api/v1/auth/register should validate input', async () => {
     const response = await request(app)
       .post('/api/v1/auth/register')
@@ -58,6 +61,73 @@ describe('Auth Routes', () => {
 
     expect(response.body.success).toBe(true);
     expect(response.body).toHaveProperty('data');
+  });
+
+  test('PUT /api/v1/auth/change-password should update password and allow login', async () => {
+    // Create user directly and mark email verified
+    const email = 'change.test@example.com';
+    const originalPassword = 'oldPass123';
+    const newPassword = 'newPass456';
+
+    const user = await User.create({
+      firstName: 'Change',
+      lastName: 'Tester',
+      email,
+      password: originalPassword,
+      userType: 'job_seeker',
+      isEmailVerified: true
+    });
+
+    // Login to get token
+    const loginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email, password: originalPassword })
+      .expect(200);
+
+    const token = loginRes.body.data.token;
+
+    // Change password
+    await request(app)
+      .put('/api/v1/auth/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ currentPassword: originalPassword, newPassword })
+      .expect(200);
+
+    // Login with new password should succeed
+    await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email, password: newPassword })
+      .expect(200);
+  });
+
+  test('POST /api/v1/auth/reset-password should update password and allow login', async () => {
+    const email = 'reset.test@example.com';
+    const originalPassword = 'resetOld123';
+    const newPassword = 'resetNew456';
+
+    const user = await User.create({
+      firstName: 'Reset',
+      lastName: 'Tester',
+      email,
+      password: originalPassword,
+      userType: 'job_seeker',
+      isEmailVerified: true
+    });
+
+    // Initiate password reset and obtain token
+    const { resetToken } = await AuthService.initiatePasswordReset(email);
+
+    // Call reset endpoint
+    await request(app)
+      .post('/api/v1/auth/reset-password')
+      .send({ token: resetToken, newPassword })
+      .expect(200);
+
+    // Login with new password should succeed
+    await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email, password: newPassword })
+      .expect(200);
   });
 });
 

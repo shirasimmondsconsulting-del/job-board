@@ -36,18 +36,22 @@ class UploadService {
   static async uploadResume(file, userId) {
     try {
       const result = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-          {
-            folder: `${process.env.CLOUDINARY_FOLDER}/resumes/${userId}`,
-            resource_type: 'auto',
-            use_filename: true,
-            unique_filename: true
-          },
-          (error, result) => {
-            if (error) reject(error);
-            resolve(result);
-          }
-        ).end(file.buffer);
+        cloudinary.uploader
+          .upload_stream(
+            {
+              folder: `${
+                process.env.CLOUDINARY_FOLDER || "job-board"
+              }/resumes/${userId}`,
+              resource_type: "raw",
+              use_filename: true,
+              unique_filename: true,
+            },
+            (error, result) => {
+              if (error) reject(error);
+              resolve(result);
+            },
+          )
+          .end(file.buffer);
       });
 
       return {

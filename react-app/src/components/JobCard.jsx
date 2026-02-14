@@ -34,7 +34,7 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
   // Get location from different possible formats
   const getLocation = () => {
     if (typeof job.location === 'object') {
-      const parts = [job.location.city, job.location.country].filter(Boolean)
+      const parts = [job.location.city].filter(Boolean)
       return parts.join(', ') || 'Location TBD'
     }
     return job.location || 'Location TBD'
@@ -126,7 +126,8 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
 
   const getSalary = () => {
     if (job.salary?.minSalary || job.salary?.maxSalary) {
-      const currency = job.salary.currency || 'USD'
+      const currencyCode = job.salary.currency || 'ILS'
+      const currency = currencyCode === 'ILS' ? '₪' : currencyCode
       const min = job.salary.minSalary
       const max = job.salary.maxSalary
       if (min && max) return `${currency} ${min.toLocaleString()} - ${max.toLocaleString()}`

@@ -237,8 +237,8 @@ class NotificationController {
         },
         {
           type: 'job_expired',
-          title: 'Job Posting Expired',
-          description: 'When your job posting reaches its deadline'
+          title: 'Job Posting Closed',
+          description: 'When your job posting is closed or removed'
         },
         {
           type: 'profile_viewed',

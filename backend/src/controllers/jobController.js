@@ -297,8 +297,7 @@ class JobController {
           $group: {
             _id: {
               city: '$location.city',
-              state: '$location.state',
-              country: '$location.country'
+              state: '$location.state'
             },
             count: { $sum: 1 }
           }

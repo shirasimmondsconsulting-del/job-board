@@ -39,11 +39,19 @@ const uploadProfileImage = multer({
 const uploadResume = multer({
   storage: memoryStorage,
   fileFilter: (req, file, cb) => {
-    // Only PDFs for resume
-    if (file.mimetype === 'application/pdf') {
+    // PDFs, DOC, DOCX for resume
+    const allowed = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (allowed.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF files are allowed for resume'), false);
+      cb(
+        new Error("Only PDF, DOC, and DOCX files are allowed for resume"),
+        false,
+      );
     }
   },
   limits: {

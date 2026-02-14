@@ -225,7 +225,7 @@ function JobSeekerApplications() {
                                   <span className="flex items-center gap-1">
                                     <MapPin className="w-4 h-4" />
                                     {typeof job.location === 'object'
-                                      ? `${job.location.city || ''}, ${job.location.country || ''}`.replace(/, $/, '')
+                                      ? `${job.location.city || ''}`.replace(/, $/, '')
                                       : job.location}
                                   </span>
                                 )}
@@ -238,7 +238,7 @@ function JobSeekerApplications() {
                                 {(job.salary?.minSalary || job.salary?.maxSalary) && (
                                   <span className="flex items-center gap-1">
                                     <DollarSign className="w-4 h-4" />
-                                    {job.salary.currency || 'USD'} {job.salary.minSalary?.toLocaleString()} - {job.salary.maxSalary?.toLocaleString()}
+                                    {(job.salary.currency === 'ILS' || !job.salary.currency) ? '₪' : job.salary.currency} {job.salary.minSalary?.toLocaleString()} - {job.salary.maxSalary?.toLocaleString()}
                                   </span>
                                 )}
                               </div>

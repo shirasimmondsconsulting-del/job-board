@@ -2,120 +2,129 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { USER_TYPES } = require('../config/constants');
 
-const userSchema = new mongoose.Schema({
-  // Basic Information
-  firstName: {
-    type: String,
-    required: [true, 'First name is required'],
-    trim: true,
-    maxlength: [50, 'First name cannot exceed 50 characters']
-  },
-  lastName: {
-    type: String,
-    required: [true, 'Last name is required'],
-    trim: true,
-    maxlength: [50, 'Last name cannot exceed 50 characters']
-  },
-  email: {
-    type: String,
-    required: [true, 'Email is required'],
-    unique: true,
-    lowercase: true,
-    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
-  },
-  password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: 6,
-    select: false // Don't return password by default
-  },
+const userSchema = new mongoose.Schema(
+  {
+    // Basic Information
+    firstName: {
+      type: String,
+      required: [true, "First name is required"],
+      trim: true,
+      maxlength: [50, "First name cannot exceed 50 characters"],
+    },
+    lastName: {
+      type: String,
+      required: [true, "Last name is required"],
+      trim: true,
+      maxlength: [50, "Last name cannot exceed 50 characters"],
+    },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      lowercase: true,
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        "Please provide a valid email",
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      minlength: 6,
+      select: false, // Don't return password by default
+    },
 
-  // Profile Information
-  userType: {
-    type: String,
-    enum: Object.values(USER_TYPES),
-    required: true
-  },
-  profileImage: {
-    url: String,
-    publicId: String  // For Cloudinary deletion
-  },
-  bio: {
-    type: String,
-    maxlength: [500, 'Bio cannot exceed 500 characters']
-  },
+    // Profile Information
+    userType: {
+      type: String,
+      enum: Object.values(USER_TYPES),
+      required: true,
+    },
+    profileImage: {
+      url: String,
+      publicId: String, // For Cloudinary deletion
+    },
+    bio: {
+      type: String,
+      maxlength: [500, "Bio cannot exceed 500 characters"],
+    },
+    linkedinUrl: {
+      type: String,
+    },
 
-  // Job Seeker Specific
-  phone: String,
-  location: String,
-  skills: [String],
-  experience: {
-    yearsOfExperience: Number,
-    currentJobTitle: String,
-    previousCompanies: [String]
-  },
-  education: {
-    degree: String,
-    fieldOfStudy: String,
-    university: String,
-    graduationYear: Number
-  },
-  resume: {
-    url: String,
-    publicId: String,
-    uploadedAt: Date
-  },
-  preferredJobTypes: [String],
-  preferredLocations: [String],
-  availability: {
-    type: String,
-    enum: ['Immediate', '1-2 weeks', '2-4 weeks', 'Not available']
-  },
+    // Job Seeker Specific
+    phone: String,
+    location: String,
+    skills: [String],
+    experience: {
+      yearsOfExperience: Number,
+      currentJobTitle: String,
+      previousCompanies: [String],
+    },
+    education: {
+      degree: String,
+      fieldOfStudy: String,
+      university: String,
+      graduationYear: Number,
+    },
+    resume: {
+      url: String,
+      publicId: String,
+      uploadedAt: Date,
+    },
+    preferredJobTypes: [String],
+    preferredLocations: [String],
+    availability: {
+      type: String,
+      enum: ["now", "3-months", "6-months", "12-months"],
+    },
 
-  // Employer Specific
-  companyId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company'
-  },
+    // Employer Specific
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+    },
 
-  // Account Status
-  isEmailVerified: {
-    type: Boolean,
-    default: false
-  },
-  emailVerificationToken: String,
-  emailVerificationExpires: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
+    // Account Status
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
 
-  // Security & Settings
-  isSuspended: {
-    type: Boolean,
-    default: false
-  },
-  suspensionReason: String,
-  twoFactorEnabled: {
-    type: Boolean,
-    default: false
-  },
-  preferences: {
-    emailNotifications: { type: Boolean, default: true },
-    smsNotifications: { type: Boolean, default: false },
-    marketingEmails: { type: Boolean, default: true }
-  },
+    // Security & Settings
+    isSuspended: {
+      type: Boolean,
+      default: false,
+    },
+    suspensionReason: String,
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    preferences: {
+      emailNotifications: { type: Boolean, default: true },
+      smsNotifications: { type: Boolean, default: false },
+      marketingEmails: { type: Boolean, default: true },
+    },
 
-  // Metadata
-  lastLogin: Date,
-  createdAt: {
-    type: Date,
-    default: Date.now
+    // Metadata
+    lastLogin: Date,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    deletedAt: Date,
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
-  deletedAt: Date
-}, { timestamps: true });
+  { timestamps: true },
+);
 
 // Indexes
 userSchema.index({ email: 1 });

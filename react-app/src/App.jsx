@@ -8,6 +8,7 @@ import JobDetail from './pages/JobDetail'
 import SavedJobs from './pages/SavedJobs'
 import JobSeekers from './pages/JobSeekers'
 import JobSeekerProfile from './pages/JobSeekerProfile'
+import CreateProfile from "./pages/CreateProfile";
 import Companies from './pages/Companies'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -19,6 +20,7 @@ import MyApplications from './pages/MyApplications'
 import JobSeekerApplications from './pages/JobSeekerApplications'
 import EmployerDashboard from './pages/EmployerDashboard'
 import EmployerJobs from './pages/EmployerJobs'
+import MyProfile from "./pages/MyProfile";
 import Test from './pages/Test'
 
 function App() {
@@ -39,20 +41,54 @@ function App() {
           <Route
             path="saved-jobs"
             element={
-              <ProtectedRoute allowedUserTypes={['job_seeker']}>
+              <ProtectedRoute allowedUserTypes={["job_seeker"]}>
                 <SavedJobs />
               </ProtectedRoute>
             }
           />
-          <Route path="job-seekers" element={<JobSeekers />} />
-          <Route path="job-seekers/:id" element={<JobSeekerProfile />} />
+          <Route
+            path="job-seekers"
+            element={
+              <ProtectedRoute allowedUserTypes={["employer"]}>
+                <JobSeekers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="job-seekers/:id"
+            element={
+              <ProtectedRoute allowedUserTypes={["employer"]}>
+                <JobSeekerProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* My Profile (any authenticated user) */}
+          <Route
+            path="my-profile"
+            element={
+              <ProtectedRoute allowedUserTypes={["job_seeker", "employer"]}>
+                <MyProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Job seeker profile creation / edit (job seekers only) */}
+          <Route
+            path="create-profile"
+            element={
+              <ProtectedRoute allowedUserTypes={["job_seeker"]}>
+                <CreateProfile />
+              </ProtectedRoute>
+            }
+          />
           <Route path="companies" element={<Companies />} />
 
           {/* Job Seeker Routes */}
           <Route
             path="my-applications"
             element={
-              <ProtectedRoute allowedUserTypes={['job_seeker']}>
+              <ProtectedRoute allowedUserTypes={["job_seeker"]}>
                 <JobSeekerApplications />
               </ProtectedRoute>
             }
@@ -62,7 +98,7 @@ function App() {
           <Route
             path="employer/dashboard"
             element={
-              <ProtectedRoute allowedUserTypes={['employer']}>
+              <ProtectedRoute allowedUserTypes={["employer"]}>
                 <EmployerDashboard />
               </ProtectedRoute>
             }
@@ -70,7 +106,7 @@ function App() {
           <Route
             path="employer/jobs"
             element={
-              <ProtectedRoute allowedUserTypes={['employer']}>
+              <ProtectedRoute allowedUserTypes={["employer"]}>
                 <EmployerJobs />
               </ProtectedRoute>
             }
@@ -78,7 +114,7 @@ function App() {
           <Route
             path="employer/applications"
             element={
-              <ProtectedRoute allowedUserTypes={['employer']}>
+              <ProtectedRoute allowedUserTypes={["employer"]}>
                 <MyApplications />
               </ProtectedRoute>
             }
@@ -86,7 +122,7 @@ function App() {
         </Route>
       </Routes>
     </AnimatePresence>
-  )
+  );
 }
 
 export default App

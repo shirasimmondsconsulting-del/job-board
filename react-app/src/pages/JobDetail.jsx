@@ -110,7 +110,7 @@ function JobDetail() {
 
     const company = job.companyId || {}
     const location = typeof job.location === 'object'
-        ? `${job.location.city || ''}, ${job.location.country || ''}`.replace(/, $/, '').replace(/^, /, '')
+        ? `${job.location.city || ''}`.replace(/, $/, '').replace(/^, /, '')
         : job.location
 
     return (
@@ -193,7 +193,7 @@ function JobDetail() {
                                                 <div>
                                                     <p className="text-sm text-gray-600">Salary</p>
                                                     <p className="font-bold text-emerald-700">
-                                                        {job.salary.currency || 'USD'} {job.salary.minSalary?.toLocaleString()} - {job.salary.maxSalary?.toLocaleString()}
+                                                        {(job.salary.currency === 'ILS' || !job.salary.currency) ? '₪' : job.salary.currency} {job.salary.minSalary?.toLocaleString()} - {job.salary.maxSalary?.toLocaleString()}
                                                         <span className="font-normal text-sm ml-1">/{job.salary.salaryType?.toLowerCase() || 'year'}</span>
                                                     </p>
                                                 </div>
@@ -212,21 +212,7 @@ function JobDetail() {
                                                 </p>
                                             </div>
                                         </div>
-                                        {job.applicationDeadline && (
-                                            <div className="flex items-center gap-2">
-                                                <Calendar className="w-5 h-5 text-red-500" />
-                                                <div>
-                                                    <p className="text-sm text-gray-600">Deadline</p>
-                                                    <p className="font-medium text-red-600">
-                                                        {new Date(job.applicationDeadline).toLocaleDateString('en-US', {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            year: 'numeric'
-                                                        })}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
+
                                         <div className="flex items-center gap-2">
                                             <Users className="w-5 h-5 text-gray-500" />
                                             <div>

@@ -117,7 +117,8 @@ class AuthService {
       throw new Error('Current password is incorrect');
     }
 
-    user.password = await this.hashPassword(newPassword);
+    // Assign plain password and let the User pre-save middleware hash it once
+    user.password = newPassword;
     await user.save();
 
     return user;
@@ -153,7 +154,8 @@ class AuthService {
       throw new Error('Invalid or expired reset token');
     }
 
-    user.password = await this.hashPassword(newPassword);
+    // Assign plain password and let the User pre-save middleware hash it once
+    user.password = newPassword;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
 

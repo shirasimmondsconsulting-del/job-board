@@ -280,7 +280,7 @@ class AuthController {
     try {
       const allowedFields = [
         'firstName', 'lastName', 'bio', 'phone', 'location',
-        'skills', 'experience', 'education'
+        'skills', 'experience', 'education', 'preferredJobTypes', 'preferredLocations', 'availability', 'linkedinUrl'
       ];
 
       const updates = {};
@@ -324,8 +324,8 @@ class AuthController {
         return next(new AppError('Current password is incorrect', 400));
       }
 
-      // Update password
-      user.password = await AuthService.hashPassword(newPassword);
+      // Update password (assign plain password; pre-save middleware hashes it)
+      user.password = newPassword;
       await user.save();
 
       res.status(200).json({

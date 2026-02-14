@@ -50,7 +50,8 @@ const userSchemas = {
     }),
     preferredJobTypes: Joi.array().items(Joi.string()),
     preferredLocations: Joi.array().items(Joi.string()),
-    availability: Joi.string().valid('Immediate', '1-2 weeks', '2-4 weeks', 'Not available')
+    availability: Joi.string().valid('Immediate', '1-2 weeks', '2-4 weeks', 'Not available'),
+    linkedinUrl: Joi.string().uri().allow('', null)
   }),
 
   changePassword: Joi.object({
@@ -81,13 +82,12 @@ const jobSchemas = {
     location: Joi.object({
       city: Joi.string().allow('', null),
       state: Joi.string().allow('', null),
-      country: Joi.string().allow('', null),
       isRemote: Joi.boolean().default(false)
     }).default(),
     salary: Joi.object({
       minSalary: Joi.number().min(0).allow(null, ''),
       maxSalary: Joi.number().min(0).allow(null, ''),
-      currency: Joi.string().valid('USD', 'EUR', 'GBP', 'INR', 'AUD', 'ILS').default('USD'),
+      currency: Joi.string().valid('ILS').default('ILS'),
       isVisible: Joi.boolean().default(true),
       salaryType: Joi.string().valid('Hourly', 'Annual', 'Contract').default('Annual')
     }).default(),
@@ -95,8 +95,7 @@ const jobSchemas = {
     optionalSkills: Joi.array().items(Joi.string().allow('', null)).default([]),
     qualifications: Joi.string().allow('', null),
     responsibilities: Joi.string().allow('', null),
-    benefits: Joi.array().items(Joi.string().allow('', null)).default([]),
-    applicationDeadline: Joi.date().allow(null, '')
+    benefits: Joi.array().items(Joi.string().allow('', null)).default([])
   }),
 
   update: Joi.object({
@@ -110,13 +109,12 @@ const jobSchemas = {
     location: Joi.object({
       city: Joi.string().allow('', null),
       state: Joi.string().allow('', null),
-      country: Joi.string().allow('', null),
       isRemote: Joi.boolean()
     }),
     salary: Joi.object({
       minSalary: Joi.number().min(0).allow(null, ''),
       maxSalary: Joi.number().min(0).allow(null, ''),
-      currency: Joi.string().valid('USD', 'EUR', 'GBP', 'INR', 'AUD', 'ILS'),
+      currency: Joi.string().valid('ILS'),
       isVisible: Joi.boolean(),
       salaryType: Joi.string().valid('Hourly', 'Annual', 'Contract')
     }),
@@ -125,7 +123,6 @@ const jobSchemas = {
     qualifications: Joi.string().allow('', null),
     responsibilities: Joi.string().allow('', null),
     benefits: Joi.array().items(Joi.string().allow('', null)),
-    applicationDeadline: Joi.date().allow(null, ''),
     status: Joi.string().valid('draft', 'published', 'closed', 'expired')
   })
 };
@@ -143,8 +140,7 @@ const companySchemas = {
     foundedYear: Joi.number().min(1800).max(new Date().getFullYear()),
     headquarters: Joi.object({
       city: Joi.string(),
-      state: Joi.string(),
-      country: Joi.string()
+      state: Joi.string()
     }),
     officeLocations: Joi.array().items(Joi.string()),
     socialLinks: Joi.object({
@@ -166,8 +162,7 @@ const companySchemas = {
     foundedYear: Joi.number().min(1800).max(new Date().getFullYear()),
     headquarters: Joi.object({
       city: Joi.string(),
-      state: Joi.string(),
-      country: Joi.string()
+      state: Joi.string()
     }),
     officeLocations: Joi.array().items(Joi.string()),
     socialLinks: Joi.object({
@@ -187,7 +182,6 @@ const applicationSchemas = {
     portfolioUrl: Joi.string().allow('', null),
     linkedinUrl: Joi.string().allow('', null),
     expectedSalary: Joi.string().allow('', null),
-    availableFrom: Joi.string().allow('', null),
     resumeUrl: Joi.alternatives().try(
       Joi.string().allow('', null),
       Joi.object({

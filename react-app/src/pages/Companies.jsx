@@ -13,7 +13,6 @@ const steps = [
 const benefits = [
   { icon: Users, title: 'Access Talent Pool', desc: 'Connect with thousands of skilled Olim' },
   { icon: Zap, title: 'Post in Minutes', desc: 'Simple 5-step wizard gets you live fast' },
-  { icon: Shield, title: 'Vetted Candidates', desc: 'Verified profiles from serious professionals' },
 ]
 
 function Companies() {

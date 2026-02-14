@@ -25,6 +25,10 @@ function EmployerDashboard() {
 
     useEffect(() => {
         fetchDashboardData()
+
+        const handler = () => fetchDashboardData()
+        window.addEventListener('application:statusChanged', handler)
+        return () => window.removeEventListener('application:statusChanged', handler)
     }, [])
 
     const fetchDashboardData = async () => {
@@ -300,7 +304,20 @@ function EmployerDashboard() {
                                                 <div className="flex gap-2 mt-3 ml-13">
                                                     {applicant.email && (
                                                         <a
-                                                            href={`mailto:${applicant.email}?subject=Regarding your application for ${app.job?.title || 'the position'}`}
+                                                            href={`mailto:${applicant.email}?subject=${encodeURIComponent(`Regarding your application for ${app.job?.title || 'the position'}`)}`}
+                                                            onClick={(e) => {
+                                                              // try mailto; if not available, copy email to clipboard as fallback
+                                                              try {
+                                                                // allow default navigation to mail client
+                                                              } catch (err) {
+                                                                e.preventDefault();
+                                                              }
+                                                              // set a timeout to copy to clipboard if mail client doesn't open in some environments
+                                                              setTimeout(() => {
+                                                                // best-effort: copy email to clipboard so user can paste into their mail client
+                                                                if (navigator.clipboard) navigator.clipboard.writeText(applicant.email)
+                                                              }, 500);
+                                                            }}
                                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors"
                                                         >
                                                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

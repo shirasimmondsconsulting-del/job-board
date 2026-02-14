@@ -29,32 +29,48 @@ function Navbar() {
   const getNavLinks = () => {
     if (!isAuthenticated) {
       return [
-        { to: '/', label: 'Home', icon: Home },
-        { to: '/jobs', label: 'Find Jobs', icon: Briefcase },
-        { to: '/job-seekers', label: 'Talent', icon: Users },
-        { to: '/companies', label: 'Companies', icon: Building2 },
-        { to: 'https://youtube.com/playlist?list=PLTPqHtIjLBAfX3C_l_-dZ0HJE6fzCSIMl&si=BCJzXVHBruGoMTzS', label: 'Podcast', icon: Podcast, external: true },
-      ]
+        { to: "/", label: "Home", icon: Home },
+        { to: "/jobs", label: "Find Jobs", icon: Briefcase },
+        { to: "/companies", label: "Companies", icon: Building2 },
+        {
+          to: "https://youtube.com/playlist?list=PLTPqHtIjLBAfX3C_l_-dZ0HJE6fzCSIMl&si=BCJzXVHBruGoMTzS",
+          label: "Podcast",
+          icon: Podcast,
+          external: true,
+        },
+      ];
     }
 
     if (user?.userType === 'employer') {
       return [
-        { to: '/employer/dashboard', label: 'Dashboard', icon: Home },
-        { to: '/employer/jobs', label: 'My Jobs', icon: Briefcase },
-        { to: '/employer/applications', label: 'Applications', icon: FileText },
-        { to: '/job-seekers', label: 'Talent', icon: Users },
-        { to: 'https://youtube.com/playlist?list=PLTPqHtIjLBAfX3C_l_-dZ0HJE6fzCSIMl&si=BCJzXVHBruGoMTzS', label: 'Podcast', icon: Podcast, external: true },
-      ]
+        { to: "/employer/dashboard", label: "Dashboard", icon: Home },
+        { to: "/employer/jobs", label: "My Jobs", icon: Briefcase },
+        { to: "/employer/applications", label: "Applications", icon: FileText },
+        { to: "/job-seekers", label: "Talent", icon: Users },
+        { to: "/my-profile", label: "Profile", icon: User },
+        {
+          to: "https://youtube.com/playlist?list=PLTPqHtIjLBAfX3C_l_-dZ0HJE6fzCSIMl&si=BCJzXVHBruGoMTzS",
+          label: "Podcast",
+          icon: Podcast,
+          external: true,
+        },
+      ];
     }
 
     // job_seeker
     return [
-      { to: '/', label: 'Home', icon: Home },
-      { to: '/jobs', label: 'Find Jobs', icon: Briefcase },
-      { to: '/saved-jobs', label: 'Saved', icon: Bookmark },
-      { to: '/my-applications', label: 'My Applications', icon: FileText },
-      { to: 'https://youtube.com/playlist?list=PLTPqHtIjLBAfX3C_l_-dZ0HJE6fzCSIMl&si=BCJzXVHBruGoMTzS', label: 'Podcast', icon: Podcast, external: true },
-    ]
+      { to: "/", label: "Home", icon: Home },
+      { to: "/jobs", label: "Find Jobs", icon: Briefcase },
+      { to: "/saved-jobs", label: "Saved", icon: Bookmark },
+      { to: "/my-applications", label: "My Applications", icon: FileText },
+      { to: "/my-profile", label: "Profile", icon: User },
+      {
+        to: "https://youtube.com/playlist?list=PLTPqHtIjLBAfX3C_l_-dZ0HJE6fzCSIMl&si=BCJzXVHBruGoMTzS",
+        label: "Podcast",
+        icon: Podcast,
+        external: true,
+      },
+    ];
   }
 
   const navLinks = getNavLinks()

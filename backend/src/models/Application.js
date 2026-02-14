@@ -28,7 +28,6 @@ const applicationSchema = new mongoose.Schema({
 
   // Additional Info
   expectedSalary: String,
-  availableFrom: String,
   linkedinUrl: String,
 
   // Status Tracking

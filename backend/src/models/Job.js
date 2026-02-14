@@ -54,7 +54,6 @@ const jobSchema = new mongoose.Schema({
   location: {
     city: String,
     state: String,
-    country: String,
     isRemote: { type: Boolean, default: false }
   },
 
@@ -64,8 +63,8 @@ const jobSchema = new mongoose.Schema({
     maxSalary: Number,
     currency: {
       type: String,
-      default: 'USD',
-      enum: ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'ILS']
+      default: 'ILS',
+      enum: ['ILS']
     },
     isVisible: { type: Boolean, default: true },
     salaryType: {
@@ -90,7 +89,7 @@ const jobSchema = new mongoose.Schema({
     enum: Object.values(JOB_STATUS),
     default: JOB_STATUS.PUBLISHED
   },
-  applicationDeadline: Date,
+
   publishedAt: Date,
   closedAt: Date,
 
@@ -186,11 +185,7 @@ jobSchema.methods.incrementSaves = function () {
 // Static method to find active jobs
 jobSchema.statics.findActive = function () {
   return this.find({
-    status: JOB_STATUS.PUBLISHED,
-    $or: [
-      { applicationDeadline: { $exists: false } },
-      { applicationDeadline: { $gte: new Date() } }
-    ]
+    status: JOB_STATUS.PUBLISHED
   });
 };
 

@@ -14,7 +14,7 @@ class SavedJobController {
       const savedJobs = await SavedJob.find({ userId: req.user._id })
         .populate({
           path: 'jobId',
-          select: 'title salary location jobType companyId status applicationDeadline',
+          select: 'title salary location jobType companyId status',
           populate: {
             path: 'companyId',
             select: 'name logo industry'

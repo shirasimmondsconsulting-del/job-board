@@ -1,19 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Loader, CheckCircle } from 'lucide-react'
 import { applicationsApi } from '../api'
+import { useAuth } from '../context/AuthContext'
 
 function ApplyJobModal({ isOpen, onClose, job, onSuccess }) {
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     coverLetter: '',
     expectedSalary: '',
-    availableFrom: '',
-    portfolioUrl: '',
-    linkedinUrl: ''
+    linkedinUrl: '',
+    resumeUrl: user?.resume || null
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    // Prefill from logged-in user's profile when modal opens
+    if (isOpen && user) {
+      setFormData(prev => ({
+        ...prev,
+        linkedinUrl: user.linkedinUrl || prev.linkedinUrl,
+        resumeUrl: user.resume || prev.resumeUrl
+      }))
+    }
+  }, [isOpen, user])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -28,8 +40,9 @@ function ApplyJobModal({ isOpen, onClose, job, onSuccess }) {
 
       await applicationsApi.submit({
         jobId: job._id || job.id,
-        ...formData
-        // resumeUrl: resumeUrl // Send the uploaded file URL here
+        ...formData,
+        // if resumeUrl is an object returned from user profile, send that
+        resumeUrl: formData.resumeUrl || undefined
       })
 
       setSuccess(true)
@@ -40,8 +53,6 @@ function ApplyJobModal({ isOpen, onClose, job, onSuccess }) {
         setFormData({
           coverLetter: '',
           expectedSalary: '',
-          availableFrom: '',
-          portfolioUrl: '',
           linkedinUrl: ''
         })
       }, 2000)
@@ -179,7 +190,7 @@ function ApplyJobModal({ isOpen, onClose, job, onSuccess }) {
                 {/* Expected Salary */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Expected Salary (Annual in USD)
+                    Expected Salary (Annual in ILS)
                   </label>
                   <input
                     type="number"
@@ -191,34 +202,7 @@ function ApplyJobModal({ isOpen, onClose, job, onSuccess }) {
                   />
                 </div>
 
-                {/* Available From */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Available From
-                  </label>
-                  <input
-                    type="date"
-                    name="availableFrom"
-                    value={formData.availableFrom}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
 
-                {/* Portfolio URL */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Portfolio URL
-                  </label>
-                  <input
-                    type="text"
-                    name="portfolioUrl"
-                    value={formData.portfolioUrl}
-                    onChange={handleChange}
-                    placeholder="https://yourportfolio.com"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
 
                 {/* LinkedIn URL */}
                 <div>
