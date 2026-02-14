@@ -19,12 +19,20 @@ const corsOptions = {
       "http://127.0.0.1:3000",
       "http://127.0.0.1:3001",
       "http://127.0.0.1:3002",
-    ].map((url) => url.replace(/\/$/, "")); // Remove trailing slashes from all allowed origins
+      "https://www.habaytajobs.com",
+      "https://habaytajobs.com",
+      "https://job-board-yahk.onrender.com", // Backend URL (for API testing)
+    ].map((url) => url && url.replace(/\/$/, "")); // Remove trailing slashes from all allowed origins
+
+    console.log(`🔍 CORS Check - Origin: ${normalizedOrigin}`);
+    console.log(`✅ Allowed Origins:`, allowedOrigins.filter(Boolean));
 
     if (allowedOrigins.indexOf(normalizedOrigin) !== -1) {
+      console.log(`✅ Origin allowed: ${normalizedOrigin}`);
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      console.log(`❌ Origin blocked: ${normalizedOrigin}`);
+      callback(new Error(`Not allowed by CORS. Origin: ${normalizedOrigin}`));
     }
   },
   credentials: true,
