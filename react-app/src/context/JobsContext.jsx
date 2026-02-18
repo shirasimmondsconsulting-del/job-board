@@ -30,35 +30,68 @@ export function JobsProvider({ children }) {
     try {
       setLoading(true)
       setError(null)
-      const response = await jobsApi.getAll()
-      const jobsData = response.data.data || []
-      
-      // Map API response to expected format
-      const formattedJobs = jobsData.map(job => ({
-        id: job._id,
-        title: job.title,
-        company: job.companyId?.name || 'Unknown Company',
-        location: job.location?.city || 'Unknown Location',
-        description: job.description,
-        salaryRange: job.salary?.minSalary && job.salary?.maxSalary 
-          ? `₪${job.salary.minSalary.toLocaleString()} - ₪${job.salary.maxSalary.toLocaleString()}`
-          : 'Not specified',
-        hebrewLevel: job.languageRequirements?.hebrew || 'None Required',
-        englishLevel: job.languageRequirements?.english || 'Fluent',
-        workAuth: job.workAuthorization || 'Support Provided',
-        timeline: job.startDate || 'now',
-        industry: job.category || 'tech',
-        type: job.jobType || 'full-time',
-        remote: job.location?.isRemote || false,
-        applyUrl: job.applyUrl || '#',
-        source: 'database',
-        postedDate: job.createdAt || new Date().toISOString(),
-        experienceLevel: job.experienceLevel,
-        requiredSkills: job.requiredSkills || [],
-        jobStatus: job.status
-      }))
-      
-      setJobs(formattedJobs)
+      try {
+        const response = await jobsApi.getAll();
+        const jobsData = response.data.data || [];
+        if (!Array.isArray(jobsData)) {
+          throw new Error("Invalid response format");
+        }
+
+        // Map API response to expected format
+        const formattedJobs = jobsData.map((job) => {
+          // Resolve company: direct companyId → postedBy.companyId → fallback
+          const directCompany =
+            job.companyId && typeof job.companyId === "object"
+              ? job.companyId
+              : null;
+          const posterCompany =
+            job.postedBy?.companyId &&
+            typeof job.postedBy.companyId === "object"
+              ? job.postedBy.companyId
+              : null;
+          const resolvedCompany = directCompany || posterCompany || null;
+          const companyName = resolvedCompany?.name || null;
+
+          return {
+            _id: job._id,
+            id: job._id,
+            title: job.title,
+            company: companyName || "Unknown Company",
+            companyId: resolvedCompany || {},
+            location: job.location?.city || "Unknown Location",
+            description: job.description,
+            shortDescription: job.shortDescription,
+            salary: job.salary || {},
+            salaryRange:
+              job.salary?.minSalary && job.salary?.maxSalary
+                ? `₪${job.salary.minSalary.toLocaleString()} - ₪${job.salary.maxSalary.toLocaleString()}`
+                : "Not specified",
+            hebrewLevel: job.languageRequirements?.hebrew || "None Required",
+            englishLevel: job.languageRequirements?.english || "Fluent",
+            workAuth: job.workAuthorization || "Support Provided",
+            timeline: job.startDate || "now",
+            industry: job.category || "tech",
+            type: job.jobType || "full-time",
+            jobType: job.jobType || "full-time",
+            remote: job.location?.isRemote || false,
+            applyUrl: job.applyUrl || "#",
+            source: "database",
+            postedDate: job.createdAt || new Date().toISOString(),
+            createdAt: job.createdAt,
+            publishedAt: job.publishedAt,
+            experienceLevel: job.experienceLevel,
+            requiredSkills: job.requiredSkills || [],
+            jobStatus: job.status,
+            status: job.status,
+          };
+        });
+
+        setJobs(formattedJobs);
+      } catch (err) {
+        console.error("Failed to fetch jobs:", err);
+        setError("Failed to load jobs. Please try again later.");
+        setJobs([]);
+      }
     } catch (err) {
       console.error('Failed to fetch jobs:', err)
       setError('Failed to load jobs. Please try again later.')

@@ -72,8 +72,8 @@ class JobService {
       limit: Math.min(parseInt(limit), PAGINATION.MAX_LIMIT),
       sort: filters.sort || { createdAt: -1 },
       populate: [
-        { path: 'companyId', select: 'name logo slug industry' },
-        { path: 'postedBy', select: 'firstName lastName' }
+        { path: 'companyId', select: 'name logo slug industry website description companySize' },
+        { path: 'postedBy', select: 'firstName lastName companyId', populate: { path: 'companyId', select: 'name logo slug industry' } }
       ]
     };
 
@@ -120,7 +120,7 @@ class JobService {
   static async getJobById(jobId, userId = null) {
     const job = await Job.findById(jobId)
       .populate('companyId', 'name logo banner description website industry companySize foundedYear socialLinks')
-      .populate('postedBy', 'firstName lastName profileImage');
+      .populate({ path: 'postedBy', select: 'firstName lastName profileImage companyId', populate: { path: 'companyId', select: 'name logo slug industry description website companySize foundedYear socialLinks' } });
 
     if (!job) {
       throw new Error('Job not found');
@@ -195,7 +195,8 @@ class JobService {
     const jobs = await Job.find({ status: JOB_STATUS.PUBLISHED })
       .sort({ views: -1, createdAt: -1 })
       .limit(limit)
-      .populate('companyId', 'name logo slug');
+      .populate('companyId', 'name logo slug industry')
+      .populate({ path: 'postedBy', select: 'firstName lastName companyId', populate: { path: 'companyId', select: 'name logo slug industry' } });
 
     return jobs;
   }
@@ -215,7 +216,8 @@ class JobService {
       .sort({ score: { $meta: 'textScore' }, createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate('companyId', 'name logo slug');
+      .populate('companyId', 'name logo slug industry')
+      .populate({ path: 'postedBy', select: 'firstName lastName companyId', populate: { path: 'companyId', select: 'name logo slug industry' } });
 
     const total = await Job.countDocuments(searchQuery);
 

@@ -30,12 +30,16 @@ function JobDetail() {
         try {
             setLoading(true)
             const response = await jobsApi.getOne(id)
-            const jobData = response.data.data
+            const jobData = response.data.data.job || response.data.data;
+            if (!jobData) {
+              throw new Error("Invalid job data received");
+            }
             setJob(jobData)
             setHasApplied(jobData.hasApplied || false)
             setIsSaved(jobData.hasSaved || false)
         } catch (error) {
-            console.error('Failed to fetch job details:', error)
+          console.error("Failed to fetch job details:", error);
+          // Set an error state that will be shown to user
         } finally {
             setLoading(false)
         }
@@ -108,7 +112,10 @@ function JobDetail() {
         )
     }
 
-    const company = job.companyId || {}
+    // Resolve company: direct companyId → postedBy.companyId → fallback
+    const directCompany = job.companyId && typeof job.companyId === 'object' ? job.companyId : null;
+    const posterCompany = job.postedBy?.companyId && typeof job.postedBy.companyId === 'object' ? job.postedBy.companyId : null;
+    const company = directCompany || posterCompany || {}
     const location = typeof job.location === 'object'
         ? `${job.location.city || ''}`.replace(/, $/, '').replace(/^, /, '')
         : job.location

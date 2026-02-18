@@ -2,125 +2,122 @@ const mongoose = require('mongoose');
 const slug = require('slug');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
-const companySchema = new mongoose.Schema({
-  // Company Information
-  name: {
-    type: String,
-    required: [true, 'Company name is required'],
-    unique: true,
-    trim: true
-  },
-  slug: {
-    type: String,
-    unique: true,
-    lowercase: true
-  },
-  description: {
-    type: String,
-    required: [true, 'Company description is required']
-  },
-  website: {
-    type: String,
-    match: [/^https?:\/\/.+/, 'Please provide a valid URL']
-  },
+const companySchema = new mongoose.Schema(
+  {
+    // Company Information
+    name: {
+      type: String,
+      required: [true, "Company name is required"],
+      unique: true,
+      trim: true,
+    },
+    slug: {
+      type: String,
+      unique: true,
+      lowercase: true,
+    },
+    description: {
+      type: String,
+    },
+    website: {
+      type: String,
+    },
 
-  // Logo & Images
-  logo: {
-    url: String,
-    publicId: String
-  },
-  bannerImage: {
-    url: String,
-    publicId: String
-  },
+    // Logo & Images
+    logo: {
+      url: String,
+      publicId: String,
+    },
+    bannerImage: {
+      url: String,
+      publicId: String,
+    },
 
-  // Contact Information
-  email: {
-    type: String,
-    required: true,
-    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email']
-  },
-  phone: String,
+    // Contact Information
+    email: {
+      type: String,
+    },
+    phone: String,
 
-  // Company Details
-  industry: {
-    type: String,
-    enum: ['Technology', 'Finance', 'Healthcare', 'Retail', 'Manufacturing', 'Other']
-  },
-  companySize: {
-    type: String,
-    enum: ['Startup', 'Small', 'Medium', 'Large', 'Enterprise']
-  },
-  foundedYear: Number,
+    // Company Details
+    industry: {
+      type: String,
+    },
+    companySize: {
+      type: String,
+    },
+    foundedYear: Number,
 
-  // Location
-  headquarters: {
-    city: String,
-    state: String
-  },
-  officeLocations: [String],
+    // Location
+    headquarters: {
+      city: String,
+      state: String,
+    },
+    officeLocations: [String],
 
-  // Social Media
-  socialLinks: {
-    linkedin: String,
-    twitter: String,
-    facebook: String,
-    instagram: String
-  },
+    // Social Media
+    socialLinks: {
+      linkedin: String,
+      twitter: String,
+      facebook: String,
+      instagram: String,
+    },
 
-  // Admin & Owner
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  admins: [
-    {
+    // Admin & Owner
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
-    }
-  ],
+      ref: "User",
+      required: true,
+    },
+    admins: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
 
-  // Company Status
-  isVerified: {
-    type: Boolean,
-    default: false
-  },
-  isSuspended: {
-    type: Boolean,
-    default: false
-  },
+    // Company Status
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    isSuspended: {
+      type: Boolean,
+      default: false,
+    },
 
-  // Analytics
-  activeJobsCount: {
-    type: Number,
-    default: 0
-  },
-  totalApplications: {
-    type: Number,
-    default: 0
-  },
-  averageRating: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 5
-  },
-  reviewCount: {
-    type: Number,
-    default: 0
-  },
+    // Analytics
+    activeJobsCount: {
+      type: Number,
+      default: 0,
+    },
+    totalApplications: {
+      type: Number,
+      default: 0,
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    reviewCount: {
+      type: Number,
+      default: 0,
+    },
 
-  // Timestamps
-  createdAt: {
-    type: Date,
-    default: Date.now
+    // Timestamps
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-}, { timestamps: true });
+  { timestamps: true },
+);
 
 // Indexes
 companySchema.index({ owner: 1 });

@@ -126,13 +126,24 @@ class JobController {
         jobData.companyId = req.user.companyId;
       }
 
+      // Fallback: if still no companyId, query Company collection by ownerId/createdBy
+      if (!jobData.companyId) {
+        const Company = require('../models/Company');
+        const company = await Company.findOne({ createdBy: req.user._id }).select('_id');
+        if (company) {
+          jobData.companyId = company._id;
+          // Also update the user record so future jobs get it directly
+          await require('../models/User').findByIdAndUpdate(req.user._id, { companyId: company._id });
+        }
+      }
+
       // Ensure jobs are published immediately by default
       if (!jobData.status) {
         jobData.status = 'published';
         jobData.publishedAt = new Date();
       }
 
-      console.log('🚀 POSTING JOB:', jobData.title, 'Status:', jobData.status);
+      console.log('🚀 POSTING JOB:', jobData.title, 'companyId:', jobData.companyId, 'Status:', jobData.status);
 
       const job = await JobService.createJob(jobData, postedBy);
 
@@ -395,7 +406,8 @@ class JobController {
       if (status) query.status = status;
 
       const jobs = await Job.find(query)
-        .populate('companyId', 'name logo')
+        .populate('companyId', 'name logo slug industry')
+        .populate({ path: 'postedBy', select: 'firstName lastName companyId', populate: { path: 'companyId', select: 'name logo slug industry' } })
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(parseInt(limit));

@@ -212,7 +212,9 @@ function MyApplications() {
                                   )}
                                 </div>
                               </div>
-                              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${statusBadge.color}`}>
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border ${statusBadge.color}`}
+                              >
                                 <StatusIcon className="w-3.5 h-3.5" />
                                 {app.status}
                               </span>
@@ -221,7 +223,9 @@ function MyApplications() {
                             {/* Cover Letter */}
                             {app.coverLetter && (
                               <div className="mb-4">
-                                <p className="text-sm font-semibold text-gray-700 mb-1">Cover Letter:</p>
+                                <p className="text-sm font-semibold text-gray-700 mb-1">
+                                  Cover Letter:
+                                </p>
                                 <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
                                   {app.coverLetter}
                                 </p>
@@ -232,44 +236,72 @@ function MyApplications() {
                             <div className="flex flex-wrap gap-4 mb-4 text-sm">
                               {app.expectedSalary && (
                                 <div>
-                                  <span className="font-semibold text-gray-700">Expected Salary:</span>
-                                  <span className="text-gray-600 ml-1">${app.expectedSalary.toLocaleString()}/year</span>
+                                  <span className="font-semibold text-gray-700">
+                                    Expected Salary:
+                                  </span>
+                                  <span className="text-gray-600 ml-1">
+                                    ${app.expectedSalary.toLocaleString()}/year
+                                  </span>
                                 </div>
                               )}
                             </div>
 
                             {/* Links */}
-                            {app.linkedinUrl && (
-                              <div className="flex gap-3 mb-4">
-                                {app.linkedinUrl && (
-                                  <a
-                                    href={app.linkedinUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
-                                  >
-                                    <ExternalLink className="w-3.5 h-3.5" />
-                                    LinkedIn
-                                  </a>
-                                )}
-                              </div>
-                            )}
+                            <div className="flex gap-3 mb-4">
+                              {(app.linkedinUrl || app.userId?.linkedinUrl) && (
+                                <a
+                                  href={
+                                    (
+                                      app.linkedinUrl || app.userId?.linkedinUrl
+                                    ).startsWith("http")
+                                      ? app.linkedinUrl ||
+                                        app.userId?.linkedinUrl
+                                      : `https://${app.linkedinUrl || app.userId?.linkedinUrl}`
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  LinkedIn Profile
+                                </a>
+                              )}
+                              {app.portfolioUrl && (
+                                <a
+                                  href={
+                                    app.portfolioUrl.startsWith("http")
+                                      ? app.portfolioUrl
+                                      : `https://${app.portfolioUrl}`
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  Portfolio
+                                </a>
+                              )}
+                            </div>
 
                             {/* Actions */}
                             <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
                               {/* Message Button */}
                               {app.userId?.email && (
-                                <a
-                                  href={`mailto:${app.userId.email}?subject=${encodeURIComponent(`Regarding your application for ${selectedJobData?.title || 'the position'}`)}`}
-                                  onClick={(e) => {
-                                    // allow default mailto behavior; also copy email to clipboard as a fallback
-                                    setTimeout(() => { if (navigator.clipboard) navigator.clipboard.writeText(app.userId.email) }, 500)
+                                <button
+                                  onClick={() => {
+                                    const mailtoLink = `mailto:${app.userId.email}?subject=${encodeURIComponent(`Regarding your application for ${selectedJobData?.title || "the position"}`)}`;
+                                    window.open(mailtoLink, "_blank") ||
+                                      (window.location.href = mailtoLink);
+                                    navigator.clipboard
+                                      .writeText(app.userId.email)
+                                      .catch(() => {});
                                   }}
                                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm font-semibold transition-colors"
+                                  title={`Send email to ${app.userId.email}`}
                                 >
                                   <Mail className="w-4 h-4" />
                                   Message
-                                </a>
+                                </button>
                               )}
 
                               {/* View Profile Button */}
@@ -282,22 +314,28 @@ function MyApplications() {
                               </Link>
 
                               {/* Status Actions */}
-                              {app.status === 'pending' && (
+                              {app.status === "pending" && (
                                 <>
                                   <button
-                                    onClick={() => handleStatusUpdate(app._id, 'shortlist')}
+                                    onClick={() =>
+                                      handleStatusUpdate(app._id, "shortlist")
+                                    }
                                     className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 text-sm font-semibold transition-colors"
                                   >
                                     Shortlist
                                   </button>
                                   <button
-                                    onClick={() => handleStatusUpdate(app._id, 'accept')}
+                                    onClick={() =>
+                                      handleStatusUpdate(app._id, "accept")
+                                    }
                                     className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 text-sm font-semibold transition-colors"
                                   >
                                     Accept
                                   </button>
                                   <button
-                                    onClick={() => handleStatusUpdate(app._id, 'reject')}
+                                    onClick={() =>
+                                      handleStatusUpdate(app._id, "reject")
+                                    }
                                     className="px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-sm font-semibold transition-colors"
                                   >
                                     Reject
@@ -306,7 +344,7 @@ function MyApplications() {
                               )}
                             </div>
                           </motion.div>
-                        )
+                        );
                       })
                     )}
                   </div>

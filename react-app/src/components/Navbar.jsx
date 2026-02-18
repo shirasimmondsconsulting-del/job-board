@@ -151,7 +151,9 @@ function Navbar() {
                 <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
                   <User className="w-4 h-4 text-gray-600" />
                   <span className="text-sm font-medium text-gray-700">
-                    {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user?.email}
+                    {user?.userType === 'employer' && user?.companyId?.name
+                      ? user.companyId.name
+                      : user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user?.email}
                   </span>
                   <span className="ml-1 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded">
                     {user?.userType === 'employer' ? 'Employer' : 'Job Seeker'}

@@ -127,12 +127,13 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
   const getSalary = () => {
     if (job.salary?.minSalary || job.salary?.maxSalary) {
       const currencyCode = job.salary.currency || 'ILS'
-      const currency = currencyCode === 'ILS' ? '₪' : currencyCode
+      const currency = currencyCode === "ILS" ? "₪" : "$";
       const min = job.salary.minSalary
       const max = job.salary.maxSalary
-      if (min && max) return `${currency} ${min.toLocaleString()} - ${max.toLocaleString()}`
-      if (min) return `${currency} ${min.toLocaleString()}+`
-      if (max) return `Up to ${currency} ${max.toLocaleString()}`
+      if (min && max)
+        return `₪${min.toLocaleString()} - ₪${max.toLocaleString()}`;
+      if (min) return `₪${min.toLocaleString()}+`;
+      if (max) return `Up to ₪${max.toLocaleString()}`;
     }
     return job.salaryRange || 'Competitive'
   }

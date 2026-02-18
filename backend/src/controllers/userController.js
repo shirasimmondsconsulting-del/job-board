@@ -14,7 +14,7 @@ class UserController {
         .select(
           "-password -emailVerificationToken -emailVerificationExpires -passwordResetToken -passwordResetExpires",
         )
-        .populate("companyId", "name slug logo");
+        .populate("companyId", "name slug logo website description industry companySize socialLinks");
 
       res.status(200).json({
         success: true,
@@ -45,7 +45,7 @@ class UserController {
 
       const user = await User.findById(userId)
         .select(fields)
-        .populate("companyId", "name slug logo");
+        .populate("companyId", "name slug logo website description industry companySize socialLinks");
 
       if (!user) {
         return next(new AppError("User not found", 404));
@@ -90,7 +90,7 @@ class UserController {
       const user = await User.findByIdAndUpdate(req.user._id, updateData, {
         new: true,
         runValidators: true,
-      }).populate("companyId", "name slug logo");
+      }).populate("companyId", "name slug logo website description industry companySize socialLinks");
 
       res.status(200).json({
         success: true,

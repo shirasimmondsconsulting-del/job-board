@@ -21,13 +21,11 @@ import JobSeekerApplications from './pages/JobSeekerApplications'
 import EmployerDashboard from './pages/EmployerDashboard'
 import EmployerJobs from './pages/EmployerJobs'
 import MyProfile from "./pages/MyProfile";
-import Test from './pages/Test'
 
 function App() {
   return (
     <AnimatePresence mode="wait">
       <Routes>
-        <Route path="/test" element={<Test />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />

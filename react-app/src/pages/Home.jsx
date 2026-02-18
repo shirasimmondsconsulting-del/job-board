@@ -199,10 +199,9 @@ function Home() {
             <div className="flex flex-wrap justify-center gap-4">
                 <button
                   onClick={() => {
-                    if (!isAuthenticated) return navigate('/register')
-                    if (user?.userType === 'job_seeker') return navigate('/create-profile')
-                    // Employers -> take them to employer area
-                    return navigate('/employer/dashboard')
+                    if (!isAuthenticated) return navigate('/login')
+                    // Both job seekers and employers go to their profile page
+                    return navigate('/my-profile')
                   }}
                   className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-700 rounded-lg hover:bg-gray-50 shadow-lg font-semibold"
                 >

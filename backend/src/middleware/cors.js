@@ -24,8 +24,8 @@ const corsOptions = {
       "https://job-board-yahk.onrender.com", // Backend URL (for API testing)
     ].map((url) => url && url.replace(/\/$/, "")); // Remove trailing slashes from all allowed origins
 
-    console.log(`🔍 CORS Check - Origin: ${normalizedOrigin}`);
-    console.log(`✅ Allowed Origins:`, allowedOrigins.filter(Boolean));
+    // console.log(`🔍 CORS Check - Origin: ${normalizedOrigin}`);
+    // console.log(`✅ Allowed Origins:`, allowedOrigins.filter(Boolean));
 
     if (allowedOrigins.indexOf(normalizedOrigin) !== -1) {
       console.log(`✅ Origin allowed: ${normalizedOrigin}`);

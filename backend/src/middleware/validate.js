@@ -50,8 +50,8 @@ const userSchemas = {
     }),
     preferredJobTypes: Joi.array().items(Joi.string()),
     preferredLocations: Joi.array().items(Joi.string()),
-    availability: Joi.string().valid('Immediate', '1-2 weeks', '2-4 weeks', 'Not available'),
-    linkedinUrl: Joi.string().uri().allow('', null)
+    availability: Joi.string().valid('now', '3-months', '6-months', '12-months').allow('', null),
+    linkedinUrl: Joi.string().allow('', null)
   }),
 
   changePassword: Joi.object({
@@ -131,47 +131,51 @@ const jobSchemas = {
 const companySchemas = {
   create: Joi.object({
     name: Joi.string().min(2).max(100).required(),
-    description: Joi.string().min(50).required(),
-    website: Joi.string().uri(),
-    email: Joi.string().email().required(),
-    phone: Joi.string(),
-    industry: Joi.string().valid('Technology', 'Finance', 'Healthcare', 'Retail', 'Manufacturing', 'Other'),
-    companySize: Joi.string().valid('Startup', 'Small', 'Medium', 'Large', 'Enterprise'),
+    description: Joi.string().allow("", null),
+    website: Joi.string().allow("", null),
+    email: Joi.string().email().allow("", null),
+    phone: Joi.string().allow("", null),
+    industry: Joi.string().allow("", null),
+    companySize: Joi.string()
+      .valid("Startup", "Small", "Medium", "Large", "Enterprise")
+      .allow("", null),
     foundedYear: Joi.number().min(1800).max(new Date().getFullYear()),
     headquarters: Joi.object({
       city: Joi.string(),
-      state: Joi.string()
+      state: Joi.string(),
     }),
     officeLocations: Joi.array().items(Joi.string()),
     socialLinks: Joi.object({
-      linkedin: Joi.string().uri(),
-      twitter: Joi.string().uri(),
-      facebook: Joi.string().uri(),
-      instagram: Joi.string().uri()
-    })
+      linkedin: Joi.string().allow("", null),
+      twitter: Joi.string().allow("", null),
+      facebook: Joi.string().allow("", null),
+      instagram: Joi.string().allow("", null),
+    }),
   }),
 
   update: Joi.object({
     name: Joi.string().min(2).max(100),
-    description: Joi.string().min(50),
-    website: Joi.string().uri(),
-    email: Joi.string().email(),
-    phone: Joi.string(),
-    industry: Joi.string().valid('Technology', 'Finance', 'Healthcare', 'Retail', 'Manufacturing', 'Other'),
-    companySize: Joi.string().valid('Startup', 'Small', 'Medium', 'Large', 'Enterprise'),
+    description: Joi.string().allow("", null),
+    website: Joi.string().allow("", null),
+    email: Joi.string().email().allow("", null),
+    phone: Joi.string().allow("", null),
+    industry: Joi.string().allow("", null),
+    companySize: Joi.string()
+      .valid("Startup", "Small", "Medium", "Large", "Enterprise")
+      .allow("", null),
     foundedYear: Joi.number().min(1800).max(new Date().getFullYear()),
     headquarters: Joi.object({
       city: Joi.string(),
-      state: Joi.string()
+      state: Joi.string(),
     }),
     officeLocations: Joi.array().items(Joi.string()),
     socialLinks: Joi.object({
-      linkedin: Joi.string().uri(),
-      twitter: Joi.string().uri(),
-      facebook: Joi.string().uri(),
-      instagram: Joi.string().uri()
-    })
-  })
+      linkedin: Joi.string().allow("", null),
+      twitter: Joi.string().allow("", null),
+      facebook: Joi.string().allow("", null),
+      instagram: Joi.string().allow("", null),
+    }),
+  }),
 };
 
 // Application validation schemas

@@ -38,12 +38,12 @@ function ApplyJobModal({ isOpen, onClose, job, onSuccess }) {
       // const uploadRes = await uploadToCloudinary(formData.resumeFile);
       // const resumeUrl = { url: uploadRes.secure_url, publicId: uploadRes.public_id };
 
-      await applicationsApi.submit({
+      const response = await applicationsApi.submit({
         jobId: job._id || job.id,
         ...formData,
         // if resumeUrl is an object returned from user profile, send that
-        resumeUrl: formData.resumeUrl || undefined
-      })
+        resumeUrl: formData.resumeUrl || undefined,
+      });
 
       setSuccess(true)
       setTimeout(() => {
@@ -58,10 +58,19 @@ function ApplyJobModal({ isOpen, onClose, job, onSuccess }) {
       }, 2000)
     } catch (err) {
       const backendError = err.response?.data;
-      if (backendError?.errors && Array.isArray(backendError.errors)) {
-        setError(backendError.errors.map(e => e.message).join('. '));
+      const statusCode = err.response?.status;
+      if (
+        statusCode === 409 ||
+        backendError?.message?.includes("already applied") ||
+        backendError?.message?.includes("duplicate")
+      ) {
+        setError(
+          "You have already applied for this job. You can only apply once per position.",
+        );
+      } else if (backendError?.errors && Array.isArray(backendError.errors)) {
+        setError(backendError.errors.map((e) => e.message).join(". "));
       } else {
-        setError(backendError?.message || 'Failed to submit application');
+        setError(backendError?.message || "Failed to submit application");
       }
     } finally {
       setLoading(false)

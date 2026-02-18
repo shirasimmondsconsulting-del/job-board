@@ -245,7 +245,7 @@ class AuthController {
     try {
       const user = await User.findById(req.user._id)
         .select('-password -emailVerificationToken -emailVerificationExpires -passwordResetToken -passwordResetExpires')
-        .populate('companyId', 'name slug logo');
+        .populate('companyId', 'name slug logo website description industry companySize socialLinks');
 
       res.status(200).json({
         success: true,
@@ -294,7 +294,8 @@ class AuthController {
         req.user._id,
         updates,
         { new: true, runValidators: true }
-      ).select('-password');
+      ).select('-password')
+        .populate('companyId', 'name slug logo website description industry companySize socialLinks');
 
       res.status(200).json({
         success: true,

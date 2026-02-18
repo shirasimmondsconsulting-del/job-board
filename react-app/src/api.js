@@ -115,6 +115,21 @@ export const reviewsApi = {
   report: (id, reportData) => apiClient.post(`/reviews/${id}/report`, reportData)
 };
 
+// Users endpoints
+export const usersApi = {
+  getProfile: () => apiClient.get('/users/profile'),
+  updateProfile: (data) => apiClient.put('/users/profile', data),
+  uploadResume: (formData) => apiClient.post('/users/upload-resume', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  uploadProfileImage: (formData) => apiClient.post('/users/upload-profile-image', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  getJobSeekers: (filters = {}) => apiClient.get('/users/job-seekers', { params: filters }),
+  getPublicProfile: (id) => apiClient.get(`/users/${id}`),
+  getDashboard: () => apiClient.get('/users/dashboard'),
+  getApplications: () => apiClient.get('/users/applications'),
+  getSavedJobs: () => apiClient.get('/users/saved-jobs'),
+  getJobRecommendations: () => apiClient.get('/users/job-recommendations'),
+  updatePreferences: (preferences) => apiClient.put('/users/preferences', preferences),
+};
+
 // Notifications endpoints
 export const notificationsApi = {
   getAll: (filters = {}) => apiClient.get('/notifications', { params: filters }),
@@ -126,21 +141,6 @@ export const notificationsApi = {
   getTypes: () => apiClient.get('/notifications/types'),
   updatePreferences: (preferences) => apiClient.put('/notifications/preferences', preferences),
   getPreferences: () => apiClient.get('/notifications/preferences')
-};
-
-// Users endpoints
-export const usersApi = {
-  getProfile: () => apiClient.get('/users/profile'),
-  getJobSeekers: (params) => apiClient.get('/users/job-seekers', { params }),
-  getPublicProfile: (id) => apiClient.get(`/users/${id}`),
-  updateProfile: (profileData) => apiClient.put('/users/profile', profileData),
-  uploadResume: (formData) => apiClient.post('/users/upload-resume', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-  uploadProfileImage: (formData) => apiClient.post('/users/upload-profile-image', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-  getDashboard: () => apiClient.get('/users/dashboard'),
-  getApplications: () => apiClient.get('/users/applications'),
-  getSavedJobs: () => apiClient.get('/users/saved-jobs'),
-  getJobRecommendations: () => apiClient.get('/users/job-recommendations'),
-  updatePreferences: (preferences) => apiClient.put('/users/preferences', preferences)
 };
 
 export default apiClient;

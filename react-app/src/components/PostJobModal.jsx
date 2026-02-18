@@ -78,22 +78,22 @@ function PostJobModal({ isOpen, onClose, onJobPosted, editJob = null }) {
     } else {
       // Reset form for new job
       setFormData({
-        title: '',
-        description: '',
-        shortDescription: '',
-        city: '',
+        title: "",
+        description: "",
+        shortDescription: "",
+        city: "Tel Aviv, Israel",
         isRemote: false,
-        jobType: 'Full-time',
-        experienceLevel: 'Mid Level',
-        category: 'IT',
-        salaryMin: '',
-        salaryMax: '',
-        currency: 'ILS',
-        requiredSkills: '',
-        optionalSkills: '',
-        qualifications: '',
-        responsibilities: '',
-        benefits: ''
+        jobType: "Full-time",
+        experienceLevel: "Mid Level",
+        category: "IT",
+        salaryMin: "",
+        salaryMax: "",
+        currency: "ILS",
+        requiredSkills: "",
+        optionalSkills: "",
+        qualifications: "",
+        responsibilities: "",
+        benefits: "",
       });
     }
   }, [editJob, isOpen]);
