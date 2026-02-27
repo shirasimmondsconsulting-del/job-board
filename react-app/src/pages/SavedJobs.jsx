@@ -20,7 +20,10 @@ function SavedJobs() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full mb-6">
               <Bookmark className="w-4 h-4 text-primary-200" />
-              <span className="text-sm font-medium text-white">{savedJobs.length} saved {savedJobs.length === 1 ? 'job' : 'jobs'}</span>
+              <span className="text-sm font-medium text-white">
+                {savedJobs.length} saved{" "}
+                {savedJobs.length === 1 ? "job" : "jobs"}
+              </span>
             </div>
             <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
               Your Saved Jobs
@@ -100,15 +103,27 @@ function SavedJobs() {
                           </span>
                         </div>
                         <div className="flex gap-2">
-                          <a
-                            href={job.applyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
-                          >
-                            Apply Now
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
+                          {/* External / scraped jobs → open external platform */}
+                          {job.source === "external" ? (
+                            <a
+                              href={job.applyUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+                            >
+                              Apply on {job.sourceLabel || "Indeed"}
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          ) : (
+                            /* Employer-posted jobs → view job detail page */
+                            <Link
+                              to={`/jobs/${job._id || job.id}`}
+                              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+                            >
+                              View & Apply
+                              <ExternalLink className="w-4 h-4" />
+                            </Link>
+                          )}
                           <button
                             onClick={() => toggleSaveJob(job.id)}
                             className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-sm font-semibold transition-colors"
@@ -132,9 +147,12 @@ function SavedJobs() {
               <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Bookmark className="w-10 h-10 text-gray-300" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">No Saved Jobs Yet</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                No Saved Jobs Yet
+              </h3>
               <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                Start browsing jobs and save the ones you're interested in to access them quickly later.
+                Start browsing jobs and save the ones you're interested in to
+                access them quickly later.
               </p>
               <Link to="/jobs" className="btn btn-primary btn-lg">
                 Browse Jobs
@@ -145,7 +163,7 @@ function SavedJobs() {
         </div>
       </section>
     </div>
-  )
+  );
 }
 
 export default SavedJobs

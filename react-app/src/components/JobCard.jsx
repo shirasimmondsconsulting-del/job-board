@@ -61,31 +61,37 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
 
   const handleSaveClick = async () => {
     if (!isAuthenticated) {
-      navigate('/login')
-      return
+      navigate("/login");
+      return;
     }
 
-    // Try using the API for real jobs, fallback to context for mock jobs
+    // External / scraped jobs: save to localStorage only (no DB _id)
+    if (job.source === "external") {
+      toggleSaveJob(jobId);
+      return;
+    }
+
+    // Employer-posted jobs: use the API
     if (job._id) {
       try {
-        setSaving(true)
+        setSaving(true);
         if (localSaved || saved) {
-          await savedJobsApi.remove(job._id)
-          setLocalSaved(false)
-          toast.success('Job removed from saved');
+          await savedJobsApi.remove(job._id);
+          setLocalSaved(false);
+          toast.success("Job removed from saved");
         } else {
-          await savedJobsApi.save(job._id)
-          setLocalSaved(true)
-          toast.success('Job saved successfully');
+          await savedJobsApi.save(job._id);
+          setLocalSaved(true);
+          toast.success("Job saved successfully");
         }
       } catch (err) {
-        toast.error('Failed to save job');
-        console.error('Failed to save job:', err)
+        toast.error("Failed to save job");
+        console.error("Failed to save job:", err);
       } finally {
-        setSaving(false)
+        setSaving(false);
       }
     } else {
-      toggleSaveJob(jobId)
+      toggleSaveJob(jobId);
     }
   }
 
@@ -154,7 +160,9 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
           <div className="flex-1 min-w-0">
             {/* Badges Row */}
             <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border ${jobTypeBadge.color}`}>
+              <span
+                className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border ${jobTypeBadge.color}`}
+              >
                 <Briefcase className="w-3 h-3" />
                 {jobTypeBadge.text}
               </span>
@@ -168,6 +176,12 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">
                   <CheckCircle className="w-3 h-3" />
                   Applied
+                </span>
+              )}
+              {job.source === "external" && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-100">
+                  <ExternalLink className="w-3 h-3" />
+                  Via {job.sourceLabel || "External"}
                 </span>
               )}
               <span className="text-xs text-gray-400 flex items-center gap-1 ml-auto">
@@ -199,11 +213,12 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
           <button
             onClick={handleSaveClick}
             disabled={saving}
-            className={`flex-shrink-0 p-2.5 rounded-xl transition-all duration-200 ${isSaved
-              ? 'bg-primary-100 text-primary-700 hover:bg-primary-200 shadow-sm'
-              : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600'
-              }`}
-            aria-label={isSaved ? 'Remove from saved' : 'Save job'}
+            className={`flex-shrink-0 p-2.5 rounded-xl transition-all duration-200 ${
+              isSaved
+                ? "bg-primary-100 text-primary-700 hover:bg-primary-200 shadow-sm"
+                : "bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            }`}
+            aria-label={isSaved ? "Remove from saved" : "Save job"}
           >
             {isSaved ? (
               <BookmarkCheck className="w-5 h-5" />
@@ -242,7 +257,9 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
             <Banknote className="w-4 h-4 text-emerald-600" />
-            <span className="text-base font-bold text-gray-900">{getSalary()}</span>
+            <span className="text-base font-bold text-gray-900">
+              {getSalary()}
+            </span>
           </div>
 
           <div className="flex items-center gap-2 ml-auto sm:ml-0">
@@ -271,17 +288,29 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
             )}
 
             {/* Apply Button - only for job seekers or unauthenticated */}
-            {!isEmployer && (
-              isAuthenticated ? (
+            {!isEmployer &&
+              // External / scraped job → always redirect to external platform
+              (job.source === "external" ? (
+                <a
+                  href={job.applyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  Apply
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              ) : isAuthenticated ? (
                 <button
                   onClick={job.hasApplied ? undefined : handleApplyNow}
                   disabled={job.hasApplied}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md ${job.hasApplied
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 cursor-default opacity-80'
-                    : 'bg-primary-600 hover:bg-primary-700 text-white cursor-pointer'
-                    }`}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md ${
+                    job.hasApplied
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-100 cursor-default opacity-80"
+                      : "bg-primary-600 hover:bg-primary-700 text-white cursor-pointer"
+                  }`}
                 >
-                  {job.hasApplied ? 'Applied' : 'Apply'}
+                  {job.hasApplied ? "Applied" : "Apply"}
                   {!job.hasApplied && <ExternalLink className="w-3.5 h-3.5" />}
                   {job.hasApplied && <CheckCircle className="w-3.5 h-3.5" />}
                 </button>
@@ -293,18 +322,19 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
                   <LogIn className="w-3.5 h-3.5" />
                   Login
                 </button>
-              )
-            )}
+              ))}
           </div>
         </div>
       </div>
 
-      {/* Apply Modal */}
-      <ApplyJobModal
-        isOpen={showApplyModal}
-        onClose={() => setShowApplyModal(false)}
-        job={job}
-      />
+      {/* Apply Modal – only for employer-posted (database) jobs */}
+      {job.source !== "external" && (
+        <ApplyJobModal
+          isOpen={showApplyModal}
+          onClose={() => setShowApplyModal(false)}
+          job={job}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <ConfirmModal
@@ -313,11 +343,11 @@ function JobCard({ job, index = 0, onJobDeleted, onJobEdited }) {
         onConfirm={handleDelete}
         title="Delete Job Post"
         message={`Are you sure you want to delete "${job.title}"? This action cannot be undone.`}
-        confirmText={deleting ? 'Deleting...' : 'Delete Job'}
+        confirmText={deleting ? "Deleting..." : "Delete Job"}
         type="danger"
       />
     </motion.div>
-  )
+  );
 }
 
 export default JobCard

@@ -5,22 +5,29 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3001,
-    open: true
+    open: true,
   },
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
+    outDir: "dist",
+    assetsDir: "assets",
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom']
-        }
-      }
-    }
+        manualChunks(id) {
+          // Each scraped dataset JSON  →  its own lazy chunk (keeps main bundle small)
+          if (id.includes("dataset_") && id.endsWith(".json")) {
+            return "scraped-datasets";
+          }
+          // Core vendor libraries
+          if (id.includes("node_modules")) {
+            return "vendor";
+          }
+        },
+      },
+    },
   },
   resolve: {
     alias: {
-      '@': '/src'
-    }
-  }
-})
+      "@": "/src",
+    },
+  },
+});

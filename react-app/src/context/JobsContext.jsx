@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { jobsApi } from '../api'
+import { scrapedJobs } from "../utils/scrapedJobs";
 
 const JobsContext = createContext()
 
@@ -86,11 +87,23 @@ export function JobsProvider({ children }) {
           };
         });
 
-        setJobs(formattedJobs);
+        // Merge: API jobs first (employer-posted), then scraped external jobs
+        // Deduplicate in case a scraped _id somehow collides with a DB _id
+        const apiIds = new Set(formattedJobs.map((j) => j._id));
+        const filteredScraped = scrapedJobs.filter((j) => !apiIds.has(j._id));
+        const merged = [...formattedJobs, ...filteredScraped];
+        console.log("📊 Jobs Context Merge:", {
+          apiJobs: formattedJobs.length,
+          scrapedTotal: scrapedJobs.length,
+          scrapedAfterDedup: filteredScraped.length,
+          totalMerged: merged.length,
+        });
+        setJobs(merged);
       } catch (err) {
         console.error("Failed to fetch jobs:", err);
         setError("Failed to load jobs. Please try again later.");
-        setJobs([]);
+        // Still show scraped jobs even if the API is down
+        setJobs([...scrapedJobs]);
       }
     } catch (err) {
       console.error('Failed to fetch jobs:', err)
@@ -161,8 +174,9 @@ export function JobsProvider({ children }) {
     clearFilters,
     loading,
     error,
-    fetchJobsFromAPI
-  }
+    fetchJobsFromAPI,
+    fetchJobs: fetchJobsFromAPI, // alias used by several pages
+  };
 
   return (
     <JobsContext.Provider value={value}>
